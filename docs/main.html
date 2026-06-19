@@ -1,0 +1,794 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Claims App — Build Log</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:           #0D0F12;
+      --surface:      #141720;
+      --surface-2:    #1C2030;
+      --border:       #252A3A;
+      --text:         #E8EAF0;
+      --text-muted:   #7A8099;
+      --text-subtle:  #4A5068;
+      --green:        #3DD68C;
+      --green-dim:    #1A3D2E;
+      --blue:         #4D9FFF;
+      --blue-dim:     #162440;
+      --amber:        #F5A623;
+      --amber-dim:    #2E2010;
+      --purple:       #A78BFA;
+      --purple-dim:   #1E1A35;
+      --red:          #FF6B6B;
+      --red-dim:      #2E1515;
+      --font:         'IBM Plex Sans', system-ui, sans-serif;
+      --mono:         'IBM Plex Mono', ui-monospace, monospace;
+    }
+
+    body {
+      font-family: var(--font);
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      padding: 48px 24px 100px;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .page { max-width: 860px; margin: 0 auto; }
+
+    /* ── HEADER ── */
+    .header {
+      padding-bottom: 40px;
+      margin-bottom: 52px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .wordmark {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 28px;
+    }
+    .wordmark-icon {
+      width: 36px; height: 36px;
+      background: var(--green-dim);
+      border: 1px solid var(--green);
+      border-radius: 8px;
+      display: grid; place-items: center;
+      flex-shrink: 0;
+    }
+    .wordmark-icon svg {
+      width: 18px; height: 18px;
+      stroke: var(--green); fill: none;
+      stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
+    }
+    .wordmark-text {
+      font-family: var(--mono);
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      color: var(--text);
+    }
+    .wordmark-sub {
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--text-subtle);
+      margin-top: 2px;
+    }
+
+    h1 {
+      font-size: 30px;
+      font-weight: 600;
+      letter-spacing: -0.02em;
+      line-height: 1.2;
+      color: var(--text);
+    }
+    h1 em { font-style: normal; color: var(--green); }
+
+    .header-meta {
+      margin-top: 12px;
+      font-size: 14px;
+      color: var(--text-muted);
+      max-width: 62ch;
+      line-height: 1.55;
+    }
+
+    .stat-row {
+      display: flex;
+      gap: 24px;
+      margin-top: 28px;
+      flex-wrap: wrap;
+    }
+    .stat {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+    .stat-num {
+      font-family: var(--mono);
+      font-size: 22px;
+      font-weight: 600;
+      color: var(--text);
+    }
+    .stat-num .accent-green { color: var(--green); }
+    .stat-num .accent-blue  { color: var(--blue); }
+    .stat-num .accent-amber { color: var(--amber); }
+    .stat-label {
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--text-subtle);
+    }
+
+    /* ── PHASE SECTIONS ── */
+    .phase {
+      margin-bottom: 44px;
+    }
+
+    .phase-header {
+      display: flex;
+      align-items: baseline;
+      gap: 14px;
+      margin-bottom: 16px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .phase-tag {
+      font-family: var(--mono);
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      padding: 4px 10px;
+      border-radius: 4px;
+      flex-shrink: 0;
+    }
+    .tag-a      { background: var(--green-dim);  color: var(--green);  border: 1px solid #2A5C40; }
+    .tag-d      { background: var(--purple-dim); color: var(--purple); border: 1px solid #3A3060; }
+    .tag-c      { background: var(--amber-dim);  color: var(--amber);  border: 1px solid #5C3A10; }
+    .tag-b      { background: var(--blue-dim);   color: var(--blue);   border: 1px solid #1A3A5C; }
+    .tag-e      { background: var(--surface-2);  color: var(--text-muted); border: 1px solid var(--border); }
+    .tag-ref    { background: var(--surface-2);  color: var(--text-muted); border: 1px solid var(--border); }
+
+    .phase-name {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--text);
+    }
+    .phase-window {
+      font-family: var(--mono);
+      font-size: 11px;
+      letter-spacing: 0.05em;
+      color: var(--text-subtle);
+      margin-left: auto;
+    }
+
+    /* ── SLICE GRID ── */
+    .slice-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+    @media (max-width: 600px) { .slice-grid { grid-template-columns: 1fr; } }
+
+    .slice-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 18px 20px;
+      text-decoration: none;
+      color: inherit;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      transition: border-color 180ms ease, transform 180ms ease, background 180ms ease;
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .slice-card:hover {
+      border-color: var(--text-subtle);
+      transform: translateY(-2px);
+      background: var(--surface-2);
+    }
+
+    /* Clickable state — available */
+    .slice-card.available:hover { border-color: var(--green); }
+    .slice-card.available:hover .slice-num { color: var(--green); }
+
+    /* State: locked */
+    .slice-card.locked {
+      opacity: 0.45;
+      cursor: not-allowed;
+      pointer-events: none;
+    }
+
+    /* State: done */
+    .slice-card.done { border-left: 3px solid var(--green); }
+    .slice-card.done:hover { border-color: var(--green); }
+    .slice-card.done .slice-num { color: var(--green); }
+
+    /* State: active */
+    .slice-card.active { border-left: 3px solid var(--blue); }
+    .slice-card.active:hover { border-color: var(--blue); }
+    .slice-card.active .slice-num { color: var(--blue); }
+
+    .slice-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .slice-num {
+      font-family: var(--mono);
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--text-subtle);
+      transition: color 180ms ease;
+    }
+    .slice-status {
+      font-family: var(--mono);
+      font-size: 9px;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding: 3px 8px;
+      border-radius: 3px;
+    }
+    .status-done    { background: var(--green-dim);  color: var(--green);  }
+    .status-active  { background: var(--blue-dim);   color: var(--blue);   }
+    .status-up-next { background: var(--amber-dim);  color: var(--amber);  }
+    .status-locked  { background: var(--surface-2);  color: var(--text-subtle); }
+
+    .slice-title {
+      font-size: 14.5px;
+      font-weight: 600;
+      color: var(--text);
+      line-height: 1.3;
+    }
+
+    .slice-desc {
+      font-size: 12.5px;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+
+    .slice-footer {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 4px;
+    }
+    .slice-adr {
+      font-family: var(--mono);
+      font-size: 10px;
+      color: var(--text-subtle);
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .slice-adr .dot {
+      width: 5px; height: 5px;
+      border-radius: 50%;
+      background: var(--text-subtle);
+      flex-shrink: 0;
+    }
+    .slice-adr .dot.green { background: var(--green); }
+
+    .arrow-hint {
+      margin-left: auto;
+      color: var(--text-subtle);
+      font-size: 13px;
+      transition: color 180ms ease, transform 180ms ease;
+    }
+    .slice-card:hover .arrow-hint {
+      color: var(--text-muted);
+      transform: translateX(3px);
+    }
+
+    /* single-col card (for wide items like career plan) */
+    .slice-card.full {
+      grid-column: 1 / -1;
+    }
+
+    /* ── ADR LEDGER ── */
+    .adr-section { margin-top: 52px; }
+    .adr-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 0;
+    }
+    .adr-table th {
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--text-subtle);
+      text-align: left;
+      padding: 8px 14px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+    }
+    .adr-table td {
+      font-size: 13px;
+      color: var(--text-muted);
+      padding: 10px 14px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      vertical-align: top;
+    }
+    .adr-table tr:hover td { background: var(--surface-2); }
+    .adr-id {
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--green);
+      white-space: nowrap;
+    }
+    .adr-empty {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--text-subtle);
+      text-align: center;
+      padding: 28px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-top: none;
+    }
+
+    /* ── FOOTER ── */
+    .footer {
+      margin-top: 64px;
+      padding-top: 24px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .footer-left {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--text-subtle);
+      letter-spacing: 0.05em;
+    }
+    .footer-right {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--text-subtle);
+    }
+    .footer-right a {
+      color: var(--blue);
+      text-decoration: none;
+    }
+    .footer-right a:hover { text-decoration: underline; }
+
+    /* ── SECTION LABEL ── */
+    h2 {
+      font-size: 12px;
+      font-family: var(--mono);
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--text-subtle);
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    h2::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+
+    /* ── PROGRESS BAR ── */
+    .progress-wrap {
+      margin-top: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .progress-bar {
+      height: 3px;
+      background: var(--surface-2);
+      border-radius: 2px;
+      overflow: hidden;
+    }
+    .progress-fill {
+      height: 100%;
+      border-radius: 2px;
+      background: var(--green);
+      transition: width 600ms ease;
+    }
+    .progress-label {
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: 0.08em;
+      color: var(--text-subtle);
+      display: flex;
+      justify-content: space-between;
+    }
+  </style>
+</head>
+<body>
+<div class="page">
+
+  <!-- HEADER -->
+  <header class="header">
+    <div class="wordmark">
+      <div class="wordmark-icon">
+        <svg viewBox="0 0 24 24">
+          <path d="M9 3H5a2 2 0 00-2 2v4m6-6h10a2 2 0 012 2v4M9 3v18m0 0h10a2 2 0 002-2V9M9 21H5a2 2 0 01-2-2V9m0 0h18"/>
+        </svg>
+      </div>
+      <div>
+        <div class="wordmark-text">claims-app</div>
+        <div class="wordmark-sub">Build log · Solution Architect path</div>
+      </div>
+    </div>
+
+    <h1>Phase by phase, slice by slice —<br><em>building the thing.</em></h1>
+    <p class="header-meta">
+      Insurance claims management app — built front-to-back as the hands-on vehicle for closing the SWE and GenAI gaps, earning CCA-F, and reaching AWS Professional. Every slice, every ADR, logged here.
+    </p>
+
+    <div class="stat-row">
+      <div class="stat">
+        <div class="stat-num"><span id="stat-done" class="accent-green">1</span></div>
+        <div class="stat-label">Slices done</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num"><span id="stat-total" class="accent-blue">18</span></div>
+        <div class="stat-label">Total slices</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num"><span id="stat-adrs" class="accent-amber">0</span></div>
+        <div class="stat-label">ADRs written</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num"><span id="stat-phase" class="accent-green">A</span></div>
+        <div class="stat-label">Current phase</div>
+      </div>
+    </div>
+
+    <div class="progress-wrap">
+      <div class="progress-bar">
+        <div class="progress-fill" style="width: 5.5%"></div>
+      </div>
+      <div class="progress-label">
+        <span>Jun 2026</span>
+        <span id="progress-pct">5.5% complete</span>
+        <span>May 2027</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- ── PHASE A ── -->
+  <section class="phase">
+    <div class="phase-header">
+      <span class="phase-tag tag-a">Phase A</span>
+      <span class="phase-name">Software Engineering Fluency</span>
+      <span class="phase-window">Now → Sept 2026</span>
+    </div>
+    <div class="slice-grid">
+
+      <a class="slice-card done" href="PhaseA-Slice0.html">
+        <div class="slice-top">
+          <span class="slice-num">A · Slice 0</span>
+          <span class="slice-status status-done">✓ Done</span>
+        </div>
+        <div class="slice-title">Environment &amp; Repo</div>
+        <div class="slice-desc">Codespaces + devcontainer + Postgres sidecar + FastAPI skeleton. The whole stack connects.</div>
+        <div class="slice-footer">
+          <span class="slice-adr"><span class="dot green"></span>ADR-001 pending</span>
+          <span class="arrow-hint">→</span>
+        </div>
+      </a>
+
+      <a class="slice-card active" href="#">
+        <div class="slice-top">
+          <span class="slice-num">A · Slice 1</span>
+          <span class="slice-status status-active">▶ Active</span>
+        </div>
+        <div class="slice-title">Data Model</div>
+        <div class="slice-desc">Customer, Policy, Claim tables in Postgres via SQLAlchemy + Alembic. First migrations.</div>
+        <div class="slice-footer">
+          <span class="slice-adr"><span class="dot"></span>ADR-001 — data model decisions</span>
+          <span class="arrow-hint">→</span>
+        </div>
+      </a>
+
+      <a class="slice-card locked" href="#">
+        <div class="slice-top">
+          <span class="slice-num">A · Slice 2</span>
+          <span class="slice-status status-locked">Locked</span>
+        </div>
+        <div class="slice-title">First End-to-End</div>
+        <div class="slice-desc">Create + read a claim via FastAPI → Postgres. No auth yet. Swagger UI works end-to-end.</div>
+        <div class="slice-footer">
+          <span class="slice-adr"><span class="dot"></span>ADR-002 — API shape</span>
+        </div>
+      </a>
+
+      <a class="slice-card locked" href="#">
+        <div class="slice-top">
+          <span class="slice-num">A · Slice 3</span>
+          <span class="slice-status status-locked">Locked</span>
+        </div>
+        <div class="slice-title">Tests &amp; Logging</div>
+        <div class="slice-desc">pytest coverage on the claim path. structlog structured logging. CI runs green.</div>
+        <div class="slice-footer">
+          <span class="slice-adr"><span class="dot"></span>ADR-003 — logging strategy</span>
+        </div>
+      </a>
+
+      <a class="slice-card locked" href="#">
+        <div class="slice-top">
+          <span class="slice-num">A · Slice 4</span>
+          <span class="slice-status status-locked">Locked</span>
+        </div>
+        <div class="slice-title">Authentication</div>
+        <div class="slice-desc">JWT auth. Protected endpoints. Roles: adjuster vs policyholder. ADR on the auth strategy.</div>
+        <div class="slice-footer">
+          <span class="slice-adr"><span class="dot"></span>ADR-004 — auth approach</span>
+        </div>
+      </a>
+
+      <a class="slice-card locked" href="#">
+        <div class="slice-top">
+          <span class="slice-num">A · Slice 5</span>
+          <span class="slice-status status-locked">Locked</span>
+        </div>
+        <div class="slice-title">Minimal Frontend</div>
+        <div class="slice-desc">React + shadcn/ui: list, view, and create claims. Wired to the live API. No mock data.</div>
+        <div class="slice-footer">
+          <span class="slice-adr"><span class="dot"></span>ADR-005 — UI framework</span>
+        </div>
+      </a>
+
+      <a class="slice-card locked full" href="#">
+        <div class="slice-top">
+          <span class="slice-num">A · Slice 6</span>
+          <span class="slice-status status-locked">Locked</span>
+        </div>
+        <div class="slice-title">Containerize, Deploy &amp; CI</div>
+        <div class="slice-desc">Docker → AWS App Runner → GitHub Actions. The app has a real public URL. CI passes on every push.</div>
+        <div class="slice-footer">
+          <span class="slice-adr"><span class="dot"></span>ADR-006 — deployment target</span>
+        </div>
+      </a>
+
+    </div>
+  </section>
+
+  <!-- ── PHASE D ── -->
+  <section class="phase">
+    <div class="phase-header">
+      <span class="phase-tag tag-d">Phase D</span>
+      <span class="phase-name">GenAI &amp; Agentic AI</span>
+      <span class="phase-window">Jun → Sept/Oct 2026</span>
+    </div>
+    <div class="slice-grid">
+
+      <a class="slice-card locked" href="#">
+        <div class="slice-top">
+          <span class="slice-num">D · Slice 1</span>
+          <span class="slice-status status-locked">Locked</span>
+        </div>
+        <div class="slice-title">Document Extraction</div>
+        <div class="slice-desc">Claude returns structured fields from uploaded claim documents. First AI integration.</div>
+        <div class="slice-footer">
+          <span class="slice-adr"><span class="dot"></span>ADR-007</span>
+        </div>
+      </a>
+
+      <a class="slice-card locked" href="#">
+        <div class="slice-top">
+          <span class="slice-num">D · Slice 2</span>
+          <span class="slice-status status-locked">Locked</span>
+        </div>
+        <div class="slice-title">Claim Triage &amp; Risk Flagging</div>
+        <div class="slice-desc">Severity and risk scores over claim + policy data. Structured outputs. Adjuster UI integration.</div>
+        <div class="slice-footer">
+          <span class="slice-adr"><span class="dot"></span>ADR-008</span>
+        </div>
+      </a>
+
+      <a class="slice-card locked" href="#">
+        <div class="slice-top">
+          <span class="slice-num">D · Slice 3</span>
+          <span class="slice-status status-locked">Locked</span>
+        </div>
+        <div class="slice-title">Policyholder Assistant</div>
+        <div class="slice-desc">RAG over policy docs + tool-calls into the live claims API. Conversational status queries.</div>
+        <div class="slice-footer">
+          <span class="slice-adr"><span class="dot"></span>ADR-009</span>
+        </div>
+      </a>
+
+      <a class="slice-card locked" href="#">
+        <div class="slice-top">
+          <span class="slice-num">D · Slice 4</span>
+          <span class="slice-status status-locked">Locked</span>
+        </div>
+        <div class="slice-title">Adjuster Summaries</div>
+        <div class="slice-desc">On-demand claim timeline and summary generation. Prompt engineering for consistency.</div>
+        <div class="slice-footer">
+          <span class="slice-adr"><span class="dot"></span>ADR-010</span>
+        </div>
+      </a>
+
+      <a class="slice-card locked full" href="#">
+        <div class="slice-top">
+          <span class="slice-num">D · Slice 5</span>
+          <span class="slice-status status-locked">Locked</span>
+        </div>
+        <div class="slice-title">Agentic Claim Processing — Showpiece</div>
+        <div class="slice-desc">Multi-step agent: validate → check coverage (tool) → request missing info → draft recommendation. Orchestration, memory, error handling.</div>
+        <div class="slice-footer">
+          <span class="slice-adr"><span class="dot"></span>ADR-011</span>
+        </div>
+      </a>
+
+      <a class="slice-card locked full" href="#">
+        <div class="slice-top">
+          <span class="slice-num">D · Slice 6</span>
+          <span class="slice-status status-locked">Locked</span>
+        </div>
+        <div class="slice-title">Evaluation Harness</div>
+        <div class="slice-desc">Measuring whether the AI features are actually good. LLM-as-judge, regression tests, metrics dashboard.</div>
+        <div class="slice-footer">
+          <span class="slice-adr"><span class="dot"></span>ADR-012</span>
+        </div>
+      </a>
+
+    </div>
+  </section>
+
+  <!-- ── PHASE C ── -->
+  <section class="phase">
+    <div class="phase-header">
+      <span class="phase-tag tag-c">Phase C</span>
+      <span class="phase-name">Modernization</span>
+      <span class="phase-window">Oct → Dec 2026</span>
+    </div>
+    <div class="slice-grid">
+
+      <a class="slice-card locked" href="#">
+        <div class="slice-top">
+          <span class="slice-num">C · Slice 1</span>
+          <span class="slice-status status-locked">Locked</span>
+        </div>
+        <div class="slice-title">Modernization Concepts &amp; Assessment</div>
+        <div class="slice-desc">7 Rs, strangler-fig, decomposition. Legacy assessment framework. ADR as a target-architecture brief.</div>
+        <div class="slice-footer">
+          <span class="slice-adr"><span class="dot"></span>ADR-013</span>
+        </div>
+      </a>
+
+      <a class="slice-card locked" href="#">
+        <div class="slice-top">
+          <span class="slice-num">C · Slice 2</span>
+          <span class="slice-status status-locked">Locked</span>
+        </div>
+        <div class="slice-title">Modernize-an-App Project</div>
+        <div class="slice-desc">Take a legacy app through a real modernization path on AWS. Landing zones, containerization, migration patterns.</div>
+        <div class="slice-footer">
+          <span class="slice-adr"><span class="dot"></span>ADR-014</span>
+        </div>
+      </a>
+
+    </div>
+  </section>
+
+  <!-- ── PHASE B ── -->
+  <section class="phase">
+    <div class="phase-header">
+      <span class="phase-tag tag-b">Phase B</span>
+      <span class="phase-name">AWS Professional (SAP)</span>
+      <span class="phase-window">Jan → Apr/May 2027</span>
+    </div>
+    <div class="slice-grid">
+
+      <a class="slice-card locked" href="#">
+        <div class="slice-top">
+          <span class="slice-num">B · Study block</span>
+          <span class="slice-status status-locked">Locked</span>
+        </div>
+        <div class="slice-title">SAP-C02 Prep</div>
+        <div class="slice-desc">Multi-account, advanced networking, security/IAM at depth, cost optimization, resilience &amp; DR. Cantrill / Maarek + Tutorials Dojo.</div>
+        <div class="slice-footer">
+          <span class="slice-adr"><span class="dot"></span>Target: Apr/May 2027</span>
+        </div>
+      </a>
+
+      <a class="slice-card locked" href="#">
+        <div class="slice-top">
+          <span class="slice-num">B · Architecture brief</span>
+          <span class="slice-status status-locked">Locked</span>
+        </div>
+        <div class="slice-title">Portfolio Walkthrough</div>
+        <div class="slice-desc">Architecture brief + recorded 10-min walkthrough of the claims app. The defended, client-ready presentation.</div>
+        <div class="slice-footer">
+          <span class="slice-adr"><span class="dot"></span>ADR-015+</span>
+        </div>
+      </a>
+
+    </div>
+  </section>
+
+  <!-- ── REFERENCE DOCS ── -->
+  <section class="phase">
+    <div class="phase-header">
+      <span class="phase-tag tag-ref">Reference</span>
+      <span class="phase-name">Plans &amp; Strategy</span>
+    </div>
+    <div class="slice-grid">
+
+      <a class="slice-card available full" href="career-path-slide.html">
+        <div class="slice-top">
+          <span class="slice-num">Career path</span>
+          <span class="slice-status status-done">✓ v1</span>
+        </div>
+        <div class="slice-title">One-Year Roadmap — Manager Slide</div>
+        <div class="slice-desc">The 1600×900 infographic summary: GenAI + AWS Professional + modernization. For manager conversations.</div>
+        <div class="slice-footer">
+          <span class="slice-adr"><span class="dot green"></span>Shareable · Jun 2026</span>
+          <span class="arrow-hint">→</span>
+        </div>
+      </a>
+
+    </div>
+  </section>
+
+  <!-- ── ADR LEDGER ── -->
+  <section class="adr-section">
+    <h2>ADR ledger</h2>
+    <table class="adr-table">
+      <thead>
+        <tr>
+          <th style="width:90px">ID</th>
+          <th>Decision</th>
+          <th style="width:110px">Slice</th>
+          <th style="width:100px">Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="adr-id">ADR-001</span></td>
+          <td>Environment setup — why Codespaces, why devcontainer Postgres over Neon, why Python 3.12</td>
+          <td style="font-family:var(--mono); font-size:11px; color:var(--text-subtle)">A · Slice 0</td>
+          <td><span class="slice-status status-up-next" style="font-size:9px">Pending</span></td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="adr-empty">ADRs 002–015 unlock as slices complete · target 15–25 over the year</div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <div class="footer-left">claims-app · build log · v1 · Jun 2026</div>
+    <div class="footer-right">
+      <a href="https://github.com" target="_blank">github.com/claims-app</a>
+      &nbsp;·&nbsp;
+      Solution Architect path · NTT Data
+    </div>
+  </footer>
+
+</div>
+</body>
+</html>

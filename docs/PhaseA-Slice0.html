@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Phase A · Slice 0 — Environment Reference</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0D0F12;
+      --surface: #141720;
+      --surface-2: #1C2030;
+      --border: #252A3A;
+      --border-soft: #1E2333;
+      --text: #E8EAF0;
+      --text-muted: #7A8099;
+      --text-subtle: #4A5068;
+      --green: #3DD68C;
+      --green-dim: #1A3D2E;
+      --blue: #4D9FFF;
+      --blue-dim: #162440;
+      --amber: #F5A623;
+      --amber-dim: #2E2010;
+      --red: #FF6B6B;
+      --red-dim: #2E1515;
+      --purple: #A78BFA;
+      --purple-dim: #1E1A35;
+      --font: 'IBM Plex Sans', system-ui, sans-serif;
+      --mono: 'IBM Plex Mono', ui-monospace, monospace;
+    }
+
+    body {
+      font-family: var(--font);
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      padding: 48px 24px 80px;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .page { max-width: 860px; margin: 0 auto; }
+
+    /* HEADER */
+    .header { margin-bottom: 56px; border-bottom: 1px solid var(--border); padding-bottom: 32px; }
+    .breadcrumb { font-family: var(--mono); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-subtle); margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+    .breadcrumb span { color: var(--text-subtle); }
+    .breadcrumb .current { color: var(--green); }
+    h1 { font-size: 32px; font-weight: 600; letter-spacing: -0.02em; color: var(--text); line-height: 1.2; }
+    h1 em { font-style: normal; color: var(--green); }
+    .subtitle { margin-top: 10px; font-size: 15px; color: var(--text-muted); max-width: 60ch; }
+    .status-row { display: flex; align-items: center; gap: 12px; margin-top: 20px; flex-wrap: wrap; }
+    .badge { font-family: var(--mono); font-size: 11px; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; padding: 4px 10px; border-radius: 4px; }
+    .badge.done { background: var(--green-dim); color: var(--green); }
+    .badge.phase { background: var(--blue-dim); color: var(--blue); }
+    .badge.slice { background: var(--purple-dim); color: var(--purple); }
+
+    /* SECTIONS */
+    section { margin-bottom: 52px; }
+    h2 { font-size: 13px; font-family: var(--mono); letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-subtle); margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
+    h2::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+    /* CONCEPT CARDS */
+    .concept-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    @media (max-width: 640px) { .concept-grid { grid-template-columns: 1fr; } }
+    .card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 20px 22px; }
+    .card-label { font-family: var(--mono); font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-subtle); margin-bottom: 8px; }
+    .card-title { font-size: 15px; font-weight: 600; margin-bottom: 8px; }
+    .card-title.green { color: var(--green); }
+    .card-title.blue { color: var(--blue); }
+    .card-title.amber { color: var(--amber); }
+    .card-title.purple { color: var(--purple); }
+    .card p { font-size: 13.5px; color: var(--text-muted); line-height: 1.55; }
+
+    /* HOW IT WORKS */
+    .arch-diagram { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 28px; margin-top: 4px; }
+    .arch-row { display: flex; align-items: center; gap: 0; }
+    .arch-box { background: var(--surface-2); border: 1px solid var(--border); border-radius: 6px; padding: 10px 16px; font-family: var(--mono); font-size: 12px; text-align: center; white-space: nowrap; }
+    .arch-box .label { color: var(--text-subtle); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; display: block; margin-bottom: 3px; }
+    .arch-box .name { font-weight: 600; }
+    .arch-box.green .name { color: var(--green); }
+    .arch-box.blue .name { color: var(--blue); }
+    .arch-box.amber .name { color: var(--amber); }
+    .arch-box.purple .name { color: var(--purple); }
+    .arch-arrow { flex: 1; display: flex; align-items: center; justify-content: center; color: var(--text-subtle); font-size: 18px; min-width: 32px; }
+    .arch-note { margin-top: 16px; font-size: 12.5px; color: var(--text-muted); font-family: var(--mono); }
+    .arch-note span { color: var(--text-subtle); margin-right: 6px; }
+
+    /* STEPS */
+    .steps { display: flex; flex-direction: column; gap: 0; }
+    .step { display: grid; grid-template-columns: 44px 1fr; gap: 0; }
+    .step-left { display: flex; flex-direction: column; align-items: center; }
+    .step-num { width: 28px; height: 28px; border-radius: 50%; background: var(--surface-2); border: 1px solid var(--border); display: grid; place-items: center; font-family: var(--mono); font-size: 12px; font-weight: 600; color: var(--text-muted); flex-shrink: 0; }
+    .step.done .step-num { background: var(--green-dim); border-color: var(--green); color: var(--green); }
+    .step-line { flex: 1; width: 1px; background: var(--border); margin: 4px 0; }
+    .step:last-child .step-line { display: none; }
+    .step-content { padding: 0 0 28px 16px; }
+    .step-title { font-size: 14.5px; font-weight: 600; margin-bottom: 6px; line-height: 1.3; }
+    .step-desc { font-size: 13.5px; color: var(--text-muted); line-height: 1.55; }
+
+    /* CODE BLOCKS */
+    pre, code { font-family: var(--mono); }
+    .code-block { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; margin-top: 12px; }
+    .code-header { display: flex; align-items: center; justify-content: space-between; padding: 9px 16px; background: var(--surface-2); border-bottom: 1px solid var(--border); }
+    .code-lang { font-family: var(--mono); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-subtle); }
+    pre { padding: 16px 18px; font-size: 12.5px; line-height: 1.6; overflow-x: auto; color: var(--text); }
+    .hl-key { color: var(--blue); }
+    .hl-val { color: var(--green); }
+    .hl-comment { color: var(--text-subtle); }
+    .hl-cmd { color: var(--amber); }
+    .hl-out { color: var(--text-muted); }
+
+    /* MACHINES */
+    .machine-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    @media (max-width: 640px) { .machine-grid { grid-template-columns: 1fr; } }
+    .machine-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 20px; }
+    .machine-title { font-size: 14px; font-weight: 600; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+    .machine-title .dot { width: 8px; height: 8px; border-radius: 50%; }
+    .machine-title .dot.green { background: var(--green); }
+    .machine-title .dot.blue { background: var(--blue); }
+    .machine-steps { list-style: none; display: flex; flex-direction: column; gap: 7px; }
+    .machine-steps li { font-size: 13px; color: var(--text-muted); display: flex; gap: 8px; align-items: flex-start; }
+    .machine-steps li::before { content: '→'; color: var(--text-subtle); flex-shrink: 0; font-family: var(--mono); font-size: 12px; margin-top: 1px; }
+
+    /* HOURS */
+    .hours-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    @media (max-width: 640px) { .hours-layout { grid-template-columns: 1fr; } }
+    .hours-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 20px; }
+    .hours-card h3 { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 12px; }
+    .hours-card p, .hours-card li { font-size: 13px; color: var(--text-muted); line-height: 1.55; }
+    .hours-card ul { list-style: none; display: flex; flex-direction: column; gap: 6px; }
+    .hours-card li::before { content: '·'; margin-right: 8px; color: var(--text-subtle); }
+    .meter { margin-top: 12px; background: var(--surface-2); border-radius: 4px; height: 6px; overflow: hidden; }
+    .meter-fill { height: 100%; border-radius: 4px; background: var(--green); width: 100%; }
+    .meter-label { font-family: var(--mono); font-size: 11px; color: var(--text-subtle); margin-top: 6px; }
+
+    /* TIPS */
+    .tips { display: flex; flex-direction: column; gap: 10px; }
+    .tip { display: flex; gap: 14px; align-items: flex-start; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 16px 18px; }
+    .tip-icon { font-family: var(--mono); font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; padding: 3px 8px; border-radius: 4px; white-space: nowrap; flex-shrink: 0; margin-top: 1px; }
+    .tip-icon.save { background: var(--green-dim); color: var(--green); }
+    .tip-icon.warn { background: var(--amber-dim); color: var(--amber); }
+    .tip-icon.info { background: var(--blue-dim); color: var(--blue); }
+    .tip p { font-size: 13.5px; color: var(--text-muted); line-height: 1.55; }
+    .tip p strong { color: var(--text); font-weight: 600; }
+
+    /* DONE BLOCK */
+    .done-block { background: var(--green-dim); border: 1px solid #2A5C40; border-radius: 8px; padding: 20px 24px; display: flex; gap: 16px; align-items: flex-start; }
+    .done-icon { font-size: 18px; flex-shrink: 0; }
+    .done-block h3 { font-size: 14px; font-weight: 600; color: var(--green); margin-bottom: 8px; }
+    .done-block ul { list-style: none; display: flex; flex-direction: column; gap: 5px; }
+    .done-block li { font-size: 13px; color: #6ECE9D; display: flex; gap: 8px; }
+    .done-block li::before { content: '✓'; font-family: var(--mono); }
+
+    /* NEXT */
+    .next-block { background: var(--surface); border: 1px solid var(--border); border-left: 3px solid var(--purple); border-radius: 8px; padding: 20px 24px; }
+    .next-block h3 { font-size: 14px; font-weight: 600; color: var(--purple); margin-bottom: 8px; }
+    .next-block p { font-size: 13.5px; color: var(--text-muted); }
+  </style>
+</head>
+<body>
+<div class="page">
+
+  <!-- HEADER -->
+  <header class="header">
+    <div class="breadcrumb">
+      <span>Solution Architect Path</span>
+      <span>›</span>
+      <span>Phase A · Software Engineering Fluency</span>
+      <span>›</span>
+      <span class="current">Slice 0 · Environment</span>
+    </div>
+    <h1>Phase A · Slice 0 — <em>Environment & Repo</em></h1>
+    <p class="subtitle">What we built, how it works, and how to use it every day — the reference you come back to before you forget everything.</p>
+    <div class="status-row">
+      <span class="badge done">✓ Complete</span>
+      <span class="badge phase">Phase A</span>
+      <span class="badge slice">Slice 0 of 6</span>
+    </div>
+  </header>
+
+  <!-- WHAT IS THIS -->
+  <section>
+    <h2>What we built</h2>
+    <div class="concept-grid">
+      <div class="card">
+        <div class="card-label">The repo</div>
+        <div class="card-title green">claims-app on GitHub</div>
+        <p>A Git repository that holds all your code, config, and infrastructure-as-code. Everything is version-controlled from day one — no "I'll add it to Git later."</p>
+      </div>
+      <div class="card">
+        <div class="card-label">The environment</div>
+        <div class="card-title blue">GitHub Codespaces</div>
+        <p>A full Linux development machine that runs in the cloud, inside your browser. No installs on your corporate laptop. Same environment from any device.</p>
+      </div>
+      <div class="card">
+        <div class="card-label">The container config</div>
+        <div class="card-title amber">devcontainer</div>
+        <p>A recipe (<code>.devcontainer/</code>) that tells Codespaces exactly what to install and how to wire services together. Anyone who opens the repo gets an identical machine.</p>
+      </div>
+      <div class="card">
+        <div class="card-label">The skeleton app</div>
+        <div class="card-title purple">FastAPI + Postgres</div>
+        <p>A minimal Python web server (<code>main.py</code>) with one <code>/health</code> endpoint, wired to a real Postgres database. Proof that the whole stack connects.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- HOW IT WORKS -->
+  <section>
+    <h2>How it actually works</h2>
+    <div class="arch-diagram">
+      <div class="arch-row">
+        <div class="arch-box green">
+          <span class="label">Your machine</span>
+          <span class="name">Browser / VS Code</span>
+        </div>
+        <div class="arch-arrow">──▶</div>
+        <div class="arch-box blue">
+          <span class="label">GitHub cloud</span>
+          <span class="name">Codespace VM</span>
+        </div>
+        <div class="arch-arrow">──▶</div>
+        <div class="arch-box amber">
+          <span class="label">Inside the VM</span>
+          <span class="name">app container</span>
+        </div>
+        <div class="arch-arrow">──▶</div>
+        <div class="arch-box purple">
+          <span class="label">Sidecar container</span>
+          <span class="name">Postgres :5432</span>
+        </div>
+      </div>
+      <div class="arch-note" style="margin-top:20px;">
+        <span>①</span> Your browser connects to a GitHub-hosted VM via HTTPS — no port forwarding through your router.
+      </div>
+      <div class="arch-note">
+        <span>②</span> The VM runs two Docker containers (defined in <code>docker-compose.yml</code>): one for your Python app, one for Postgres.
+      </div>
+      <div class="arch-note">
+        <span>③</span> The app container reaches Postgres via the hostname <code>db</code> — Docker's internal network, not localhost.
+      </div>
+      <div class="arch-note">
+        <span>④</span> Codespaces proxies port 8000 to a public HTTPS URL so your browser can reach the app. Must be set to <strong style="color:var(--text)">Public</strong> to work without GitHub auth headers.
+      </div>
+    </div>
+  </section>
+
+  <!-- FILE STRUCTURE -->
+  <section>
+    <h2>What we created and why</h2>
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">repo layout</span></div>
+      <pre>claims-app/
+├── <span class="hl-key">.devcontainer/</span>
+│   ├── <span class="hl-val">devcontainer.json</span>   <span class="hl-comment"># tells Codespaces what to install & run</span>
+│   └── <span class="hl-val">docker-compose.yml</span>  <span class="hl-comment"># defines app + db containers</span>
+├── <span class="hl-key">main.py</span>              <span class="hl-comment"># FastAPI app — one /health endpoint</span>
+├── <span class="hl-key">requirements.txt</span>     <span class="hl-comment"># Python packages to install</span>
+└── <span class="hl-key">.env.example</span>         <span class="hl-comment"># template for env vars (never commit real .env)</span></pre>
+    </div>
+
+    <div class="code-block" style="margin-top:16px;">
+      <div class="code-header"><span class="code-lang">docker-compose.yml — what it actually does</span></div>
+      <pre><span class="hl-key">app</span> service:
+  image: python:3.12             <span class="hl-comment"># official Python container</span>
+  DATABASE_URL → db:5432         <span class="hl-comment"># passes connection string to FastAPI</span>
+  depends_on: db                 <span class="hl-comment"># waits for Postgres before starting</span>
+
+<span class="hl-key">db</span> service:
+  image: postgres:16             <span class="hl-comment"># official Postgres container</span>
+  POSTGRES_USER: claims          <span class="hl-comment"># creates this user on first start</span>
+  POSTGRES_DB: claimsdb          <span class="hl-comment"># creates this database on first start</span>
+  volume: postgres-data          <span class="hl-comment"># data survives container restarts</span></pre>
+    </div>
+  </section>
+
+  <!-- DAILY USE — HOW TO START -->
+  <section>
+    <h2>How to start working each day</h2>
+    <div class="steps">
+      <div class="step done">
+        <div class="step-left"><div class="step-num">1</div><div class="step-line"></div></div>
+        <div class="step-content">
+          <div class="step-title">Open your Codespace</div>
+          <div class="step-desc">Go to <strong>github.com → your repo → Code → Codespaces → Resume</strong>. If it's been idle it may take 30–60 seconds to warm up. Don't create a new one — resume the existing one to preserve your state.</div>
+        </div>
+      </div>
+      <div class="step done">
+        <div class="step-left"><div class="step-num">2</div><div class="step-line"></div></div>
+        <div class="step-content">
+          <div class="step-title">Start the app server</div>
+          <div class="step-desc">In the terminal:</div>
+          <div class="code-block">
+            <pre><span class="hl-cmd">uvicorn main:app --reload --host 0.0.0.0</span></pre>
+          </div>
+          <div class="step-desc" style="margin-top:8px;">The <code>--reload</code> flag means the server restarts automatically whenever you save a file. The <code>--host 0.0.0.0</code> makes it reachable through Codespaces' proxy.</div>
+        </div>
+      </div>
+      <div class="step done">
+        <div class="step-left"><div class="step-num">3</div><div class="step-line"></div></div>
+        <div class="step-content">
+          <div class="step-title">Check port visibility</div>
+          <div class="step-desc">In VS Code, click the <strong>Ports</strong> tab at the bottom. Port 8000 must show <strong>Public</strong>. If it says Private, right-click → Change Port Visibility → Public.</div>
+        </div>
+      </div>
+      <div class="step done">
+        <div class="step-left"><div class="step-num">4</div><div class="step-line"></div></div>
+        <div class="step-content">
+          <div class="step-title">Open Swagger UI</div>
+          <div class="step-desc">In the Ports tab, click the globe icon next to port 8000, then add <code>/docs</code> to the URL. You should see the interactive API docs.</div>
+          <div class="code-block">
+            <pre><span class="hl-out">https://fantastic-funicular-xxxxx-8000.app.github.dev/docs</span></pre>
+          </div>
+        </div>
+      </div>
+      <div class="step done">
+        <div class="step-left"><div class="step-num">5</div><div class="step-line"></div></div>
+        <div class="step-content">
+          <div class="step-title">Verify Postgres (optional daily check)</div>
+          <div class="step-desc">Open a second terminal tab and run:</div>
+          <div class="code-block">
+            <pre><span class="hl-cmd">psql postgresql://claims:claims@db:5432/claimsdb -c "SELECT 1;"</span>
+<span class="hl-out"> ?column?
+----------
+        1</span></pre>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ACROSS MACHINES -->
+  <section>
+    <h2>Using across different machines</h2>
+    <div class="machine-grid">
+      <div class="machine-card">
+        <div class="machine-title"><span class="dot green"></span>Corporate laptop (browser only)</div>
+        <ul class="machine-steps">
+          <li>Open github.com in any browser</li>
+          <li>Navigate to your repo</li>
+          <li>Code → Codespaces → Resume existing codespace</li>
+          <li>VS Code opens fully in the browser tab</li>
+          <li>Nothing installed on the machine — firewall-safe</li>
+          <li>Same environment as always</li>
+        </ul>
+      </div>
+      <div class="machine-card">
+        <div class="machine-title"><span class="dot blue"></span>Home machine (desktop VS Code)</div>
+        <ul class="machine-steps">
+          <li>Install VS Code + GitHub Codespaces extension</li>
+          <li>Sign in with your GitHub account</li>
+          <li>Cmd/Ctrl+Shift+P → "Connect to Codespace"</li>
+          <li>Pick your existing codespace</li>
+          <li>Full desktop VS Code experience, same cloud VM</li>
+          <li>Better for long sessions — lower latency feel</li>
+        </ul>
+      </div>
+    </div>
+    <div class="tip" style="margin-top:12px;">
+      <span class="tip-icon info">Key point</span>
+      <p>There is only <strong>one codespace</strong> — the same VM running in GitHub's cloud. Whether you connect from your corporate laptop browser or your home VS Code, you're editing the same files on the same machine. Your running server, your Postgres data, your terminal history — all shared.</p>
+    </div>
+  </section>
+
+  <!-- HOURS -->
+  <section>
+    <h2>Free hours — how to check & understand them</h2>
+    <div class="hours-layout">
+      <div class="hours-card">
+        <h3>What you get free</h3>
+        <ul>
+          <li>120 core-hours / month on a personal account</li>
+          <li>A 2-core machine = 60 actual hours of active use</li>
+          <li>15 GB storage free (your code + Postgres data)</li>
+          <li>Resets on your GitHub billing date each month</li>
+          <li>After free tier: ~$0.18/hr (2-core)</li>
+        </ul>
+        <div class="meter"><div class="meter-fill" style="width:100%"></div></div>
+        <div class="meter-label">120 core-hours free per month</div>
+      </div>
+      <div class="hours-card">
+        <h3>How to check your usage</h3>
+        <ul>
+          <li>github.com → top-right avatar → Settings</li>
+          <li>Left menu → Billing and plans → Plans and usage</li>
+          <li>Scroll to Codespaces section</li>
+          <li>Shows core-hours used this month</li>
+          <li>Also shows storage consumed</li>
+        </ul>
+        <div style="margin-top:12px;">
+          <div class="code-block">
+            <pre><span class="hl-comment"># Direct URL</span>
+<span class="hl-val">github.com/settings/billing/summary</span></pre>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TIPS -->
+  <section>
+    <h2>Best practices to preserve hours</h2>
+    <div class="tips">
+      <div class="tip">
+        <span class="tip-icon save">Save</span>
+        <p><strong>Stop, don't delete.</strong> When you finish a session, stop the codespace (Code → Codespaces → Stop) rather than closing the tab. A stopped codespace uses zero compute hours. Only a running codespace consumes your allocation.</p>
+      </div>
+      <div class="tip">
+        <span class="tip-icon save">Save</span>
+        <p><strong>Set auto-stop timeout.</strong> Go to github.com/settings/codespaces and set the inactivity timeout to 30 minutes. If you walk away and forget, it stops itself. Default is 30 min but worth confirming.</p>
+      </div>
+      <div class="tip">
+        <span class="tip-icon save">Save</span>
+        <p><strong>Use 2-core machines.</strong> The default 2-core machine is sufficient for this entire project through Phase A and D. Don't upgrade unless you hit a real bottleneck — a 4-core machine halves your free hours.</p>
+      </div>
+      <div class="tip">
+        <span class="tip-icon warn">Note</span>
+        <p><strong>Storage is separate from compute.</strong> Even a stopped codespace uses storage. The Postgres volume (<code>postgres-data</code>) persists and counts toward your 15 GB. Not a concern at this stage, but worth knowing.</p>
+      </div>
+      <div class="tip">
+        <span class="tip-icon info">Info</span>
+        <p><strong>Prebuilds exist but aren't needed yet.</strong> GitHub can pre-build your devcontainer so it opens instantly, but this costs extra storage. Skip for now — the 2–3 min cold start is fine at this stage.</p>
+      </div>
+      <div class="tip">
+        <span class="tip-icon warn">Note</span>
+        <p><strong>Don't commit <code>.env</code> files.</strong> The <code>.env.example</code> file is safe to commit — it's a template. The real <code>.env</code> file (with actual credentials) must stay in <code>.gitignore</code>. Even for a private repo, this is the habit to build now.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- DONE CONDITION -->
+  <section>
+    <h2>Done condition — verified</h2>
+    <div class="done-block">
+      <div class="done-icon">✦</div>
+      <div>
+        <h3>Slice 0 is complete when all four are true</h3>
+        <ul>
+          <li>Codespace opens cleanly from repo without manual setup</li>
+          <li><code>GET /health</code> returns <code>{"status": "ok"}</code> in Swagger UI</li>
+          <li><code>psql ... -c "SELECT 1;"</code> returns 1 row from the db container</li>
+          <li>All files committed to <code>main</code> branch</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- NEXT -->
+  <section>
+    <h2>What's next</h2>
+    <div class="next-block">
+      <h3>ADR-001 → then Slice 1</h3>
+      <p>Before moving to Slice 1 (data model), write <strong>ADR-001: Environment setup decisions</strong> — why Codespaces over local, why devcontainer Postgres over Neon, why Python 3.12. This is your first architecture decision record. Then Slice 1: designing the <code>Customer</code>, <code>Policy</code>, and <code>Claim</code> tables.</p>
+    </div>
+  </section>
+
+</div>
+</body>
+</html>
