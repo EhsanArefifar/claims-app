@@ -4,7 +4,12 @@
   "service": "app",
   "workspaceFolder": "/workspace",
   "forwardPorts": [8000, 5432],
-  "postCreateCommand": "pip install -r requirements.txt",
+  "portsAttributes": {
+  "8000": {
+    "visibility": "public"
+    }
+  },
+  "postCreateCommand": "sudo apt-get update && sudo apt-get install -y postgresql-client && pip install -r requirements.txt",
   "customizations": {
     "vscode": {
       "extensions": [
