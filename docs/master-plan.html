@@ -1,0 +1,1936 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Career Path Master Plan · Solution Architect</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; }
+
+    :root {
+      --font-sans: 'Inter', -apple-system, system-ui, sans-serif;
+      --font-mono: 'JetBrains Mono', ui-monospace, Menlo, monospace;
+      --bg: #0D0E12;
+      --nav: #111217;
+      --surface: #16181F;
+      --surface-2: #1C1E27;
+      --pane: #FAFAF9;
+      --pane-surface: #FFFFFF;
+      --text: #0A0A0A;
+      --text-muted: #6B7280;
+      --text-subtle: #9CA3AF;
+      --border: #E5E7EB;
+      --nav-border: #21242E;
+      --nav-text: #8B8FA8;
+      --nav-text-hover: #C8CAD6;
+      --nav-text-active: #FFFFFF;
+      --accent: #625EEB;
+      --accent-soft: #ECECFB;
+      --accent-glow: rgba(98,94,235,0.18);
+      --green: #22C55E;
+      --green-soft: #DCFCE7;
+      --amber: #F59E0B;
+      --amber-soft: #FEF3C7;
+      --red-soft: #FEE2E2;
+      --radius-sm: 5px;
+      --radius-md: 10px;
+      --radius-lg: 16px;
+    }
+
+    body {
+      font-family: var(--font-sans);
+      background: var(--bg);
+      color: var(--text);
+      height: 100vh;
+      display: flex;
+      overflow: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── SIDEBAR ─────────────────────────────────── */
+    .sidebar {
+      width: 240px;
+      min-width: 240px;
+      background: var(--nav);
+      border-right: 1px solid var(--nav-border);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .sidebar-head {
+      padding: 22px 20px 18px;
+      border-bottom: 1px solid var(--nav-border);
+    }
+    .sidebar-logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .logo-mark {
+      width: 30px;
+      height: 30px;
+      background: var(--accent);
+      border-radius: 7px;
+      display: grid;
+      place-items: center;
+      flex-shrink: 0;
+    }
+    .logo-mark svg {
+      width: 16px;
+      height: 16px;
+      stroke: white;
+      fill: none;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+    .logo-text {
+      font-size: 13px;
+      font-weight: 700;
+      color: white;
+      letter-spacing: -0.01em;
+      line-height: 1.2;
+    }
+    .logo-sub {
+      font-size: 10px;
+      color: var(--nav-text);
+      font-family: var(--font-mono);
+      letter-spacing: 0.04em;
+      margin-top: 2px;
+    }
+
+    .sidebar-nav {
+      flex: 1;
+      overflow-y: auto;
+      padding: 12px 10px;
+      scrollbar-width: thin;
+      scrollbar-color: var(--nav-border) transparent;
+    }
+    .sidebar-nav::-webkit-scrollbar { width: 4px; }
+    .sidebar-nav::-webkit-scrollbar-track { background: transparent; }
+    .sidebar-nav::-webkit-scrollbar-thumb { background: var(--nav-border); border-radius: 4px; }
+
+    .nav-group-label {
+      font-family: var(--font-mono);
+      font-size: 9px;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: #3E4157;
+      padding: 14px 10px 6px;
+    }
+    .nav-group-label:first-child { padding-top: 4px; }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      padding: 7px 10px;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      transition: background 150ms ease, color 150ms ease;
+      color: var(--nav-text);
+      font-size: 13px;
+      font-weight: 500;
+      user-select: none;
+      position: relative;
+    }
+    .nav-item:hover { background: rgba(255,255,255,0.04); color: var(--nav-text-hover); }
+    .nav-item.active {
+      background: var(--accent-glow);
+      color: var(--nav-text-active);
+    }
+    .nav-item.active::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 4px;
+      bottom: 4px;
+      width: 2px;
+      background: var(--accent);
+      border-radius: 2px;
+    }
+    .nav-icon {
+      width: 16px;
+      height: 16px;
+      flex-shrink: 0;
+      opacity: 0.6;
+    }
+    .nav-item.active .nav-icon { opacity: 1; }
+    .nav-icon svg {
+      width: 16px;
+      height: 16px;
+      stroke: currentColor;
+      fill: none;
+      stroke-width: 1.8;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+    .nav-badge {
+      margin-left: auto;
+      font-family: var(--font-mono);
+      font-size: 9px;
+      font-weight: 600;
+      padding: 2px 6px;
+      border-radius: 3px;
+      background: rgba(98,94,235,0.2);
+      color: var(--accent);
+      letter-spacing: 0.03em;
+    }
+    .nav-badge.green { background: rgba(34,197,94,0.15); color: #4ADE80; }
+    .nav-badge.amber { background: rgba(245,158,11,0.15); color: #FCD34D; }
+
+    .sidebar-foot {
+      padding: 14px 20px;
+      border-top: 1px solid var(--nav-border);
+    }
+    .foot-text {
+      font-family: var(--font-mono);
+      font-size: 9.5px;
+      color: #3E4157;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      line-height: 1.8;
+    }
+
+    /* ── CONTENT PANE ────────────────────────────── */
+    .content {
+      flex: 1;
+      background: var(--pane);
+      overflow-y: auto;
+      scrollbar-width: thin;
+      scrollbar-color: var(--border) transparent;
+    }
+    .content::-webkit-scrollbar { width: 6px; }
+    .content::-webkit-scrollbar-track { background: transparent; }
+    .content::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+    .tab-pane { display: none; }
+    .tab-pane.active { display: block; }
+
+    /* ── PANE HEADER ─────────────────────────────── */
+    .pane-header {
+      background: var(--pane-surface);
+      border-bottom: 1px solid var(--border);
+      padding: 28px 44px 24px;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+    .pane-eyebrow {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 6px;
+    }
+    .pane-title {
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--text);
+      letter-spacing: -0.015em;
+    }
+    .pane-subtitle {
+      font-size: 13.5px;
+      color: var(--text-muted);
+      margin-top: 4px;
+      line-height: 1.55;
+    }
+
+    /* ── PANE BODY ───────────────────────────────── */
+    .pane-body {
+      padding: 32px 44px 60px;
+      max-width: 900px;
+    }
+
+    /* shared content primitives */
+    .section { margin-bottom: 36px; }
+    .section:last-child { margin-bottom: 0; }
+
+    .section-label {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--text-subtle);
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .section-label::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+
+    .prose {
+      font-size: 14px;
+      line-height: 1.7;
+      color: #2D2D2D;
+    }
+    .prose strong { font-weight: 600; color: var(--text); }
+    .prose em { font-style: italic; }
+    .prose code {
+      font-family: var(--font-mono);
+      font-size: 12.5px;
+      background: #F1F0FD;
+      color: var(--accent);
+      padding: 1px 5px;
+      border-radius: 3px;
+    }
+
+    .callout {
+      padding: 14px 18px;
+      border-radius: var(--radius-md);
+      font-size: 13.5px;
+      line-height: 1.6;
+      margin-bottom: 16px;
+    }
+    .callout-accent { background: var(--accent-soft); border-left: 3px solid var(--accent); color: #3730A3; }
+    .callout-green { background: var(--green-soft); border-left: 3px solid var(--green); color: #166534; }
+    .callout-amber { background: var(--amber-soft); border-left: 3px solid var(--amber); color: #92400E; }
+    .callout strong { font-weight: 700; }
+
+    .principles-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+    .principle {
+      display: flex;
+      gap: 16px;
+      align-items: flex-start;
+      padding: 16px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .principle:last-child { border-bottom: none; }
+    .p-num {
+      width: 26px;
+      height: 26px;
+      background: var(--accent-soft);
+      color: var(--accent);
+      border-radius: 50%;
+      font-size: 11px;
+      font-weight: 700;
+      display: grid;
+      place-items: center;
+      flex-shrink: 0;
+      margin-top: 1px;
+      font-family: var(--font-mono);
+    }
+    .p-title { font-size: 14px; font-weight: 600; color: var(--text); margin-bottom: 3px; }
+    .p-body { font-size: 13px; color: var(--text-muted); line-height: 1.55; }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13.5px;
+    }
+    thead tr { border-bottom: 2px solid var(--border); }
+    th {
+      font-family: var(--font-mono);
+      font-size: 9.5px;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--text-subtle);
+      padding: 0 12px 10px 0;
+      text-align: left;
+    }
+    td {
+      padding: 11px 12px 11px 0;
+      border-bottom: 1px solid var(--border);
+      vertical-align: top;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+    td:first-child { color: var(--text); font-weight: 500; }
+    tr:last-child td { border-bottom: none; }
+
+    .tag {
+      display: inline-block;
+      font-family: var(--font-mono);
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      padding: 3px 8px;
+      border-radius: 4px;
+    }
+    .tag-accent { background: var(--accent-soft); color: var(--accent); }
+    .tag-green { background: var(--green-soft); color: #15803D; }
+    .tag-amber { background: var(--amber-soft); color: #B45309; }
+    .tag-gray { background: #F1F5F9; color: #64748B; }
+
+    .checklist {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+    .check-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .check-item:last-child { border-bottom: none; }
+    .check-box {
+      width: 18px;
+      height: 18px;
+      border-radius: 4px;
+      border: 1.5px solid #D1D5DB;
+      flex-shrink: 0;
+      margin-top: 2px;
+      display: grid;
+      place-items: center;
+    }
+    .check-box.done {
+      background: var(--text);
+      border-color: var(--text);
+    }
+    .check-box.done svg { display: block; }
+    .check-box svg {
+      display: none;
+      width: 10px;
+      height: 10px;
+      stroke: white;
+      fill: none;
+      stroke-width: 2.5;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+    .check-text { font-size: 13.5px; line-height: 1.55; }
+    .check-text strong { color: var(--text); font-weight: 600; }
+    .check-text .meta {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--text-subtle);
+      margin-top: 2px;
+      display: block;
+    }
+
+    .cert-cards {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+    .cert-card {
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 18px 20px;
+    }
+    .cert-card.earned { border-color: var(--green); background: var(--green-soft); }
+    .cert-card.target { border-color: var(--accent); background: var(--accent-soft); }
+    .cert-card.future { border-color: var(--amber); background: var(--amber-soft); }
+    .cert-status {
+      font-family: var(--font-mono);
+      font-size: 9.5px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+    .cert-card.earned .cert-status { color: #15803D; }
+    .cert-card.target .cert-status { color: var(--accent); }
+    .cert-card.future .cert-status { color: #B45309; }
+    .cert-name { font-size: 15px; font-weight: 700; color: var(--text); line-height: 1.3; margin-bottom: 4px; }
+    .cert-date { font-size: 12px; font-weight: 600; color: var(--text-muted); }
+    .cert-detail { font-size: 12.5px; color: var(--text-muted); line-height: 1.55; margin-top: 8px; padding-top: 8px; border-top: 1px solid rgba(0,0,0,0.07); }
+
+    .timeline-rows {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      position: relative;
+    }
+    .timeline-rows::before {
+      content: '';
+      position: absolute;
+      left: 100px;
+      top: 10px;
+      bottom: 10px;
+      width: 1.5px;
+      background: var(--border);
+    }
+    .tl-row {
+      display: grid;
+      grid-template-columns: 100px 1fr;
+      gap: 24px;
+      padding: 0 0 24px;
+      align-items: start;
+    }
+    .tl-row:last-child { padding-bottom: 0; }
+    .tl-period {
+      text-align: right;
+      padding-right: 24px;
+      padding-top: 2px;
+    }
+    .tl-dates {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      font-weight: 600;
+      color: var(--text-subtle);
+      letter-spacing: 0.03em;
+      line-height: 1.4;
+    }
+    .tl-content {
+      background: var(--pane-surface);
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 14px 18px;
+      position: relative;
+    }
+    .tl-content::before {
+      content: '';
+      position: absolute;
+      left: -31px;
+      top: 10px;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: var(--pane-surface);
+      border: 2px solid var(--text-subtle);
+    }
+    .tl-content.active {
+      border-color: var(--accent);
+      background: var(--accent-soft);
+    }
+    .tl-content.active::before {
+      background: var(--accent);
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-soft);
+    }
+    .tl-phase { font-size: 14px; font-weight: 700; color: var(--text); margin-bottom: 6px; }
+    .tl-content.active .tl-phase { color: var(--accent); }
+    .tl-tags { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 8px; }
+    .tl-tag {
+      font-size: 11px;
+      color: var(--text-muted);
+      background: var(--pane);
+      border: 1px solid var(--border);
+      padding: 2px 7px;
+      border-radius: 3px;
+    }
+    .tl-content.active .tl-tag { background: white; }
+    .tl-milestone {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 600;
+      color: #15803D;
+      background: var(--green-soft);
+      padding: 6px 10px;
+      border-radius: 5px;
+      margin-top: 4px;
+    }
+
+    .resource-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+    .resource-item {
+      display: flex;
+      gap: 14px;
+      align-items: flex-start;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .resource-item:last-child { border-bottom: none; }
+    .r-code {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--accent);
+      background: var(--accent-soft);
+      padding: 3px 7px;
+      border-radius: 4px;
+      flex-shrink: 0;
+      margin-top: 1px;
+      min-width: 34px;
+      text-align: center;
+    }
+    .r-body { font-size: 13px; color: var(--text-muted); line-height: 1.55; }
+    .r-body strong { color: var(--text); font-weight: 600; }
+
+    .slice-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .slice {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 12px 14px;
+      background: var(--pane-surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+    }
+    .slice-num {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      font-weight: 700;
+      color: var(--text-subtle);
+      width: 18px;
+      flex-shrink: 0;
+      padding-top: 2px;
+    }
+    .slice-text { font-size: 13px; color: var(--text); line-height: 1.5; }
+    .slice-text span { color: var(--text-muted); }
+
+    .ai-features {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .ai-feature {
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+      padding: 13px 16px;
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-sm);
+      background: var(--pane-surface);
+    }
+    .ai-feature.showpiece {
+      border-color: var(--accent);
+      background: var(--accent-soft);
+    }
+    .ai-idx {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text-subtle);
+      width: 18px;
+      flex-shrink: 0;
+      padding-top: 2px;
+    }
+    .ai-feature.showpiece .ai-idx { color: var(--accent); }
+    .ai-name { font-size: 13.5px; font-weight: 700; color: var(--text); margin-bottom: 2px; }
+    .ai-feature.showpiece .ai-name { color: var(--accent); }
+    .ai-desc { font-size: 12.5px; color: var(--text-muted); line-height: 1.5; }
+    .showpiece-badge {
+      margin-left: auto;
+      font-family: var(--font-mono);
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--accent);
+      background: white;
+      padding: 2px 7px;
+      border-radius: 3px;
+      flex-shrink: 0;
+    }
+
+    .course-block {
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      margin-bottom: 16px;
+    }
+    .course-block-head {
+      padding: 12px 16px;
+      background: var(--surface-2);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .course-block-head.skip-head { background: #FFF7ED; }
+    .cb-label {
+      font-family: var(--font-mono);
+      font-size: 10.5px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--text);
+    }
+    .course-block-head.skip-head .cb-label { color: #92400E; }
+    .cb-when {
+      margin-left: auto;
+      font-size: 11.5px;
+      color: var(--text-muted);
+      font-style: italic;
+    }
+    .skip-badge {
+      font-family: var(--font-mono);
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      background: #FEF3C7;
+      color: #92400E;
+      padding: 2px 7px;
+      border-radius: 3px;
+    }
+    .course-block-body { padding: 14px 16px; background: var(--pane-surface); }
+    .lesson-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
+    .lesson-tag {
+      font-size: 11.5px;
+      color: var(--text-muted);
+      background: var(--pane);
+      border: 1px solid var(--border);
+      padding: 3px 8px;
+      border-radius: 3px;
+      font-family: var(--font-mono);
+    }
+    .lesson-tag.skip { background: #FFF7ED; border-color: #FDE68A; color: #92400E; }
+    .cb-rationale {
+      font-size: 12.5px;
+      color: var(--text-muted);
+      line-height: 1.55;
+      font-style: italic;
+      padding-top: 8px;
+      border-top: 1px solid var(--border);
+    }
+
+    .env-items {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .env-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+      padding: 14px 16px;
+      background: var(--pane-surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+    }
+    .env-icon {
+      width: 32px;
+      height: 32px;
+      background: var(--accent-soft);
+      border-radius: 7px;
+      display: grid;
+      place-items: center;
+      flex-shrink: 0;
+    }
+    .env-icon svg { width: 16px; height: 16px; stroke: var(--accent); fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+    .env-name { font-size: 14px; font-weight: 600; color: var(--text); }
+    .env-note { font-size: 12.5px; color: var(--text-muted); line-height: 1.55; margin-top: 3px; }
+
+    .status-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+    .status-card {
+      background: var(--pane-surface);
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 16px 18px;
+    }
+    .sc-label {
+      font-family: var(--font-mono);
+      font-size: 9.5px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--text-subtle);
+      margin-bottom: 6px;
+    }
+    .sc-value {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text);
+    }
+    .sc-note { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
+
+    .action-items {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .action-item {
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+      padding: 13px 16px;
+      background: var(--pane-surface);
+      border: 1px solid var(--border);
+      border-left: 3px solid var(--accent);
+      border-radius: var(--radius-sm);
+    }
+    .action-num {
+      width: 22px;
+      height: 22px;
+      background: var(--accent);
+      color: white;
+      border-radius: 50%;
+      font-size: 11px;
+      font-weight: 700;
+      display: grid;
+      place-items: center;
+      flex-shrink: 0;
+      font-family: var(--font-mono);
+    }
+    .action-text { font-size: 13.5px; color: var(--text); font-weight: 500; }
+    .action-detail { font-size: 12.5px; color: var(--text-muted); margin-top: 3px; line-height: 1.5; }
+
+    @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+  </style>
+</head>
+<body>
+
+<!-- ── SIDEBAR ───────────────────────────────────── -->
+<nav class="sidebar">
+  <div class="sidebar-head">
+    <div class="sidebar-logo">
+      <div class="logo-mark">
+        <svg viewBox="0 0 24 24"><path d="M5 4v16M5 4h11l-2 4 2 4H5"/></svg>
+      </div>
+      <div>
+        <div class="logo-text">Career Path</div>
+        <div class="logo-sub">Master Plan · v2 · Jun 2026</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="sidebar-nav">
+    <div class="nav-group-label">Overview</div>
+    <div class="nav-item active" onclick="switchTab('overview', this)">
+      <span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><path d="M9 22V12h6v10"/></svg></span>
+      Goal &amp; Context
+    </div>
+    <div class="nav-item" onclick="switchTab('profile', this)">
+      <span class="nav-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg></span>
+      Starting Profile
+    </div>
+    <div class="nav-item" onclick="switchTab('principles', this)">
+      <span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M12 2l2.5 7.5H22l-6.5 4.5 2.5 7.5L12 17l-6 4.5 2.5-7.5L3 9.5h7.5z"/></svg></span>
+      Principles
+    </div>
+
+    <div class="nav-group-label">Competencies</div>
+    <div class="nav-item" onclick="switchTab('competencies', this)">
+      <span class="nav-icon"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg></span>
+      Domain Map
+    </div>
+    <div class="nav-item" onclick="switchTab('timeline', this)">
+      <span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg></span>
+      Year Timeline
+      <span class="nav-badge">Active</span>
+    </div>
+    <div class="nav-item" onclick="switchTab('certs', this)">
+      <span class="nav-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="6"/><path d="M9 14l-5 8 4-1 2 3 4-7"/><path d="M15 14l5 8-4-1-2 3-4-7"/></svg></span>
+      Certifications
+    </div>
+
+    <div class="nav-group-label">The Build</div>
+    <div class="nav-item" onclick="switchTab('project', this)">
+      <span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M22 12H2M22 12l-4-4M22 12l-4 4M2 12l4-4M2 12l4 4"/></svg></span>
+      Flagship Project
+    </div>
+    <div class="nav-item" onclick="switchTab('phaseA', this)">
+      <span class="nav-icon"><svg viewBox="0 0 24 24"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg></span>
+      Phase A · Build Order
+    </div>
+    <div class="nav-item" onclick="switchTab('claudecode', this)">
+      <span class="nav-icon"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 9l3 3-3 3M12 15h3"/></svg></span>
+      Claude Code Course
+    </div>
+    <div class="nav-item" onclick="switchTab('phaseD', this)">
+      <span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 1010 10"/><path d="M12 6v6l4 2"/></svg></span>
+      Phase D · GenAI/Agents
+    </div>
+    <div class="nav-item" onclick="switchTab('phaseCB', this)">
+      <span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/></svg></span>
+      Phases C &amp; B
+    </div>
+
+    <div class="nav-group-label">Working Model</div>
+    <div class="nav-item" onclick="switchTab('workflow', this)">
+      <span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg></span>
+      How We Work
+    </div>
+    <div class="nav-item" onclick="switchTab('craft', this)">
+      <span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M6 3h9l4 4v14H6z"/><path d="M9 9h7M9 13h7M9 17h4"/></svg></span>
+      Phase E · Craft
+    </div>
+    <div class="nav-item" onclick="switchTab('env', this)">
+      <span class="nav-icon"><svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg></span>
+      Environment
+    </div>
+    <div class="nav-item" onclick="switchTab('risks', this)">
+      <span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></span>
+      Risks &amp; Practical
+    </div>
+
+    <div class="nav-group-label">Tracker</div>
+    <div class="nav-item" onclick="switchTab('status', this)">
+      <span class="nav-icon"><svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></span>
+      Status Log
+      <span class="nav-badge amber">Track</span>
+    </div>
+  </div>
+
+  <div class="sidebar-foot">
+    <div class="foot-text">
+      NTT Data · Digital Architecture<br>
+      Modernization &amp; Cloud
+    </div>
+  </div>
+</nav>
+
+<!-- ── CONTENT ───────────────────────────────────── -->
+<main class="content">
+
+  <!-- ═══ OVERVIEW ═══ -->
+  <div class="tab-pane active" id="tab-overview">
+    <div class="pane-header">
+      <div class="pane-eyebrow">§1 · North-Star Reference</div>
+      <div class="pane-title">Goal &amp; Context</div>
+      <div class="pane-subtitle">The single purpose this entire plan serves. Everything else is in service of this.</div>
+    </div>
+    <div class="pane-body">
+      <div class="section">
+        <div class="section-label">The Goal</div>
+        <div class="callout callout-accent">
+          <strong>Become a Solution Architect at NTT Data</strong> — a technical reference in <strong>AWS and AI</strong>, growing into modernization. Be qualified to lead solution discussions, design AWS/AI solutions, and defend tradeoffs in client and internal settings.
+        </div>
+        <div class="prose">
+          <strong>Context:</strong> Technical Manager, Digital Architecture department, Modernization &amp; Cloud team (~1 month in). Primary domains: <strong>insurance, finance/banking</strong> (not limited to them).
+        </div>
+      </div>
+      <div class="section">
+        <div class="section-label">How to Use This Plan</div>
+        <div class="prose">
+          This is the <strong>strategy + plan + tracker</strong> in one. Detailed working files (gap map, syllabus, Phase A kickoff) are companions — this supersedes and summarizes them. Read this first in any new session so we stay on course and don't detour.
+        </div>
+        <br>
+        <div class="prose">
+          The <strong>constants</strong> are: one flagship project, the ADR habit, and the three dated cert milestones. Everything else flexes around your job and pace.
+        </div>
+      </div>
+      <div class="section">
+        <div class="section-label">Re-Plan Checkpoints</div>
+        <div class="checklist">
+          <div class="check-item">
+            <div class="check-box"><svg viewBox="0 0 10 10"><path d="M2 5l2.5 2.5L8 3"/></svg></div>
+            <div class="check-text"><strong>End of Phase A</strong> — before CCA-F, review build progress and confirm readiness<span class="meta">~Sept 2026</span></div>
+          </div>
+          <div class="check-item">
+            <div class="check-box"><svg viewBox="0 0 10 10"><path d="M2 5l2.5 2.5L8 3"/></svg></div>
+            <div class="check-text"><strong>After CCA-F</strong> — debrief and reprioritise Phase C scope<span class="meta">Dec 2026</span></div>
+          </div>
+          <div class="check-item">
+            <div class="check-box"><svg viewBox="0 0 10 10"><path d="M2 5l2.5 2.5L8 3"/></svg></div>
+            <div class="check-text"><strong>Before SAP prep</strong> — expand Phase B detail, confirm Cantrill/Maarek choice<span class="meta">Jan 2027</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ PROFILE ═══ -->
+  <div class="tab-pane" id="tab-profile">
+    <div class="pane-header">
+      <div class="pane-eyebrow">§2 · Honest Baseline</div>
+      <div class="pane-title">Starting Profile</div>
+      <div class="pane-subtitle">What you're bringing to the table. The plan closes the gaps it finds here.</div>
+    </div>
+    <div class="pane-body">
+      <div class="section">
+        <div class="section-label">Background</div>
+        <table>
+          <thead><tr><th>Dimension</th><th>Current state</th></tr></thead>
+          <tbody>
+            <tr><td>Years in software</td><td>~5 years, from a <strong>telecommunications background</strong> (CCTV; minimal embedded C)</td></tr>
+            <tr><td>Work mode</td><td>Most years spent in <strong>team management</strong>, not hands-on development — no deep SWE foundation built personally</td></tr>
+            <tr><td>Python</td><td>Scripting (SUMO simulator, data analysis) — not production-grade</td></tr>
+            <tr><td>AWS</td><td>Unsupervised serverless work (Lambda, API Gateway, DynamoDB, Athena) — not to best practice</td></tr>
+            <tr><td>SQL / NoSQL</td><td>No direct development experience</td></tr>
+            <tr><td>AI / ML</td><td>Starting from scratch on agentic AI</td></tr>
+            <tr><td>Previous build style</td><td>Kiro spec-driven development — supervising, not in the build loop</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="section">
+        <div class="section-label">Certifications Held</div>
+        <div class="cert-cards">
+          <div class="cert-card earned">
+            <div class="cert-status">✓ Held</div>
+            <div class="cert-name">AWS Cloud Practitioner</div>
+            <div class="cert-date">Amazon Web Services</div>
+          </div>
+          <div class="cert-card earned">
+            <div class="cert-status">✓ Held</div>
+            <div class="cert-name">AWS Solutions Architect – Associate</div>
+            <div class="cert-date">Amazon Web Services</div>
+          </div>
+        </div>
+      </div>
+      <div class="section">
+        <div class="section-label">Strengths to Leverage</div>
+        <div class="callout callout-green">
+          <strong>Management, stakeholder &amp; communication skills</strong> are already strong — these are genuine differentiators in a Solution Architect role and are leveraged throughout Phase E (craft). The cloud Associate base provides a working platform for SAP prep.
+        </div>
+      </div>
+      <div class="section">
+        <div class="section-label">Concentrated Real Gaps</div>
+        <div class="callout callout-amber">
+          <strong>A (SWE fluency)</strong> and <strong>D (Agentic AI)</strong> are the two domains where the gap relative to the target role is largest. The plan closes both through the flagship project — not through passive study.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ PRINCIPLES ═══ -->
+  <div class="tab-pane" id="tab-principles">
+    <div class="pane-header">
+      <div class="pane-eyebrow">§3 · Guiding Principles</div>
+      <div class="pane-title">Principles</div>
+      <div class="pane-subtitle">Six rules that govern every decision in this plan. When in doubt, return here.</div>
+    </div>
+    <div class="pane-body">
+      <div class="section">
+        <div class="principles-list">
+          <div class="principle">
+            <div class="p-num">1</div>
+            <div>
+              <div class="p-title">Build one real thing; learn on demand.</div>
+              <div class="p-body">Not a syllabus to consume — a project to ship, pulling theory in when the build demands it. Passive consumption without production is the failure mode.</div>
+            </div>
+          </div>
+          <div class="principle">
+            <div class="p-num">2</div>
+            <div>
+              <div class="p-title">You build it.</div>
+              <div class="p-body">Use Claude Code to go faster, but understand every line and be able to defend it. No hiding gaps behind orchestration.</div>
+            </div>
+          </div>
+          <div class="principle">
+            <div class="p-num">3</div>
+            <div>
+              <div class="p-title">ADRs as a habit.</div>
+              <div class="p-body">Every meaningful decision gets written down. Target 15–25 over the year. The reasoning <em>is</em> the portfolio — not the code itself.</div>
+            </div>
+          </div>
+          <div class="principle">
+            <div class="p-num">4</div>
+            <div>
+              <div class="p-title">Hype-resistance is the product.</div>
+              <div class="p-body">Knowing when <em>not</em> to use an agent / AI is rarer and more valuable than building the flashiest demo. Every AI feature gets a cost/benefit review.</div>
+            </div>
+          </div>
+          <div class="principle">
+            <div class="p-num">5</div>
+            <div>
+              <div class="p-title">Hands-on-credible, not senior dev.</div>
+              <div class="p-body">The target is fluency — building a POC unaided and defending technical decisions — not a decade of engineering depth. Calibrate ambition to the target.</div>
+            </div>
+          </div>
+          <div class="principle">
+            <div class="p-num">6</div>
+            <div>
+              <div class="p-title">Anchor on real work where possible.</div>
+              <div class="p-body">Modernization especially is fed by the day job. Every NTT Data task is also a learning artifact when documented correctly.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ COMPETENCIES ═══ -->
+  <div class="tab-pane" id="tab-competencies">
+    <div class="pane-header">
+      <div class="pane-eyebrow">§4 · Five Domains</div>
+      <div class="pane-title">Domain Map</div>
+      <div class="pane-subtitle">Where you are in each domain, the priority, and when it gets attention.</div>
+    </div>
+    <div class="pane-body">
+      <div class="section">
+        <div class="section-label">Competency Domains</div>
+        <table>
+          <thead><tr><th>Domain</th><th>Current state</th><th>Priority / timing</th></tr></thead>
+          <tbody>
+            <tr>
+              <td><strong>A. Software-engineering fluency</strong></td>
+              <td>Biggest real gap; foundational substrate</td>
+              <td><span class="tag tag-accent">HIGH — start first</span></td>
+            </tr>
+            <tr>
+              <td><strong>B. AWS architecture (→ Professional)</strong></td>
+              <td>Solid Associate base; real exposure</td>
+              <td><span class="tag tag-amber">Back-loaded to year-end</span></td>
+            </tr>
+            <tr>
+              <td><strong>C. Modernization</strong></td>
+              <td>New to you (1 month in) — learn it</td>
+              <td><span class="tag tag-gray">Job-fed; autumn</span></td>
+            </tr>
+            <tr>
+              <td><strong>D. GenAI / Agentic AI</strong></td>
+              <td>From scratch; big learning lift</td>
+              <td><span class="tag tag-accent">HIGH — rides the app; tied to CCA-F</span></td>
+            </tr>
+            <tr>
+              <td><strong>E. Consulting &amp; architecture craft</strong></td>
+              <td>Management/communication already strong</td>
+              <td><span class="tag tag-green">Throughout (habit, not a block)</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="section">
+        <div class="section-label">Development Sequence</div>
+        <div class="callout callout-accent">
+          <strong>A → D → C → B → E</strong> (E threaded throughout all phases)<br><br>
+          A and D run concurrently from day one — Phase A builds the engineering foundation while Phase D study and CCA-F prep run in parallel. C feeds the day job in autumn. B closes the year with SAP.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ TIMELINE ═══ -->
+  <div class="tab-pane" id="tab-timeline">
+    <div class="pane-header">
+      <div class="pane-eyebrow">§7 · Locked Checkpoints</div>
+      <div class="pane-title">Year Timeline</div>
+      <div class="pane-subtitle">Three milestone dates anchor everything. Phases flex; these don't.</div>
+    </div>
+    <div class="pane-body">
+      <div class="section">
+        <div class="timeline-rows">
+          <div class="tl-row">
+            <div class="tl-period"><div class="tl-dates">Now →<br>Dec 2026</div></div>
+            <div class="tl-content active">
+              <div class="tl-phase">Phase A + D · Build: Insurance Claims App + AI Subsystem</div>
+              <div class="tl-tags">
+                <span class="tl-tag">Python / FastAPI</span>
+                <span class="tl-tag">PostgreSQL</span>
+                <span class="tl-tag">React</span>
+                <span class="tl-tag">Docker · App Runner</span>
+                <span class="tl-tag">Claude API</span>
+                <span class="tl-tag">RAG / Agents</span>
+                <span class="tl-tag">Bedrock / AgentCore</span>
+                <span class="tl-tag">CCA-F study (parallel from day one)</span>
+              </div>
+              <div class="tl-milestone">★ Milestone: Sit CCA-F · Dec 2026</div>
+            </div>
+          </div>
+          <div class="tl-row">
+            <div class="tl-period"><div class="tl-dates">Oct →<br>Dec 2026</div></div>
+            <div class="tl-content">
+              <div class="tl-phase">Phase C · Modernization — concepts + live team delivery + side project</div>
+              <div class="tl-tags">
+                <span class="tl-tag">7 Rs</span>
+                <span class="tl-tag">Strangler-fig</span>
+                <span class="tl-tag">Landing zones</span>
+                <span class="tl-tag">Legacy assessment</span>
+                <span class="tl-tag">Insurance / banking overlay</span>
+                <span class="tl-tag">AWS Prescriptive Guidance</span>
+              </div>
+              <div class="tl-milestone">★ Milestone: Modernization project + ADRs complete · End of Dec 2026</div>
+            </div>
+          </div>
+          <div class="tl-row">
+            <div class="tl-period"><div class="tl-dates">Jan →<br>May 2027</div></div>
+            <div class="tl-content">
+              <div class="tl-phase">Phase B · SAP-C02 prep — advanced AWS architecture</div>
+              <div class="tl-tags">
+                <span class="tl-tag">AWS Organizations</span>
+                <span class="tl-tag">Advanced networking &amp; IAM</span>
+                <span class="tl-tag">Cost optimisation</span>
+                <span class="tl-tag">Resilience / DR</span>
+                <span class="tl-tag">Cantrill / Maarek course</span>
+                <span class="tl-tag">Tutorials Dojo</span>
+              </div>
+              <div class="tl-milestone">★ Milestone: Sit SAP-C02 · Apr/May 2027</div>
+            </div>
+          </div>
+          <div class="tl-row">
+            <div class="tl-period"><div class="tl-dates">Throughout</div></div>
+            <div class="tl-content">
+              <div class="tl-phase">Phase E · Craft — ADRs, briefs, walkthroughs, discovery &amp; estimation</div>
+              <div class="tl-tags">
+                <span class="tl-tag">15–25 ADRs</span>
+                <span class="tl-tag">Architecture brief</span>
+                <span class="tl-tag">10-min walkthrough recording</span>
+                <span class="tl-tag">Stakeholder communication</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="section">
+        <div class="callout callout-green">
+          <strong>Manager note:</strong> The Q4 modernization block maps directly onto your team's actual delivery — this plan reinforces your job, it isn't separate from it. Phase C overlap with the day job eases the autumn load.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ CERTS ═══ -->
+  <div class="tab-pane" id="tab-certs">
+    <div class="pane-header">
+      <div class="pane-eyebrow">§6 · Certification Path</div>
+      <div class="pane-title">Certifications</div>
+      <div class="pane-subtitle">Two held. Two targeted. Three dated milestones.</div>
+    </div>
+    <div class="pane-body">
+      <div class="section">
+        <div class="cert-cards">
+          <div class="cert-card earned">
+            <div class="cert-status">✓ Held</div>
+            <div class="cert-name">AWS Cloud Practitioner</div>
+            <div class="cert-date">Amazon Web Services</div>
+            <div class="cert-detail">Foundational cloud literacy. Confirms understanding of AWS global infrastructure, core services, and cloud economics.</div>
+          </div>
+          <div class="cert-card earned">
+            <div class="cert-status">✓ Held</div>
+            <div class="cert-name">AWS Solutions Architect – Associate</div>
+            <div class="cert-date">Amazon Web Services (SAA-C03)</div>
+            <div class="cert-detail">Solid Associate base and real serverless exposure. Strong platform for the Professional track.</div>
+          </div>
+          <div class="cert-card target">
+            <div class="cert-status">⬜ Target · Dec 2026</div>
+            <div class="cert-name">Claude Certified Architect – Foundations (CCA-F)</div>
+            <div class="cert-date">Anthropic</div>
+            <div class="cert-detail">Proctored, 60 questions, 5 domains. Agentic architecture + Claude Code weighted heaviest. Prep: <strong>free Anthropic Academy courses on Skilljar</strong> (Claude 101 → API fundamentals → MCP → Agent Skills). Requires Claude Partner Network access — <strong>action: confirm NTT Data's partner status</strong> (orgs can join free).</div>
+          </div>
+          <div class="cert-card future">
+            <div class="cert-status">⬜ Target · Apr/May 2027</div>
+            <div class="cert-name">AWS Solutions Architect – Professional</div>
+            <div class="cert-date">Amazon Web Services (SAP-C02)</div>
+            <div class="cert-detail">Multi-account / Organizations, advanced networking, IAM at depth, cost optimization, resilience/DR, complex migration. Resources: SAP-C02 exam guide + Cantrill/Maarek + Tutorials Dojo practice exams.</div>
+          </div>
+        </div>
+      </div>
+      <div class="section">
+        <div class="section-label">Optional / Later</div>
+        <div class="callout callout-amber">
+          <strong>AWS Generative AI Developer – Professional</strong> — defer until dev fluency is genuinely real. Not a current target; revisit after SAP.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ PROJECT ═══ -->
+  <div class="tab-pane" id="tab-project">
+    <div class="pane-header">
+      <div class="pane-eyebrow">§5 · Flagship Project</div>
+      <div class="pane-title">Insurance Claims App</div>
+      <div class="pane-subtitle">The single greenfield project that drives all SWE and AI learning. Front-to-back, built by you.</div>
+    </div>
+    <div class="pane-body">
+      <div class="section">
+        <div class="section-label">Scope</div>
+        <div class="prose">
+          Build a comprehensive insurance claims application — front and back, from scratch. Greenfield, built by you. The core (non-AI) app comes first; then a genuine <strong>AI subsystem</strong> (multiple features, not a single flavour). Modernization stays a separate, later project fed by your team work.
+        </div>
+        <br>
+        <div class="prose">Core entities: <code>Customer</code>, <code>Policy</code>, <code>Claim</code> (add <code>ClaimDocument</code> later).</div>
+      </div>
+      <div class="section">
+        <div class="section-label">AI Subsystem — Phase D (layered onto core app)</div>
+        <div class="ai-features">
+          <div class="ai-feature">
+            <div class="ai-idx">01</div>
+            <div>
+              <div class="ai-name">Document Extraction</div>
+              <div class="ai-desc">Claude returns structured fields from uploaded claim documents.</div>
+            </div>
+          </div>
+          <div class="ai-feature">
+            <div class="ai-idx">02</div>
+            <div>
+              <div class="ai-name">Claim Triage</div>
+              <div class="ai-desc">Severity and risk flagging over claim and policy data.</div>
+            </div>
+          </div>
+          <div class="ai-feature">
+            <div class="ai-idx">03</div>
+            <div>
+              <div class="ai-name">Policyholder Assistant</div>
+              <div class="ai-desc">RAG over policy docs + tool-calls to your own API for live status.</div>
+            </div>
+          </div>
+          <div class="ai-feature">
+            <div class="ai-idx">04</div>
+            <div>
+              <div class="ai-name">Adjuster Summary</div>
+              <div class="ai-desc">On-demand claim timeline and narrative summary generation.</div>
+            </div>
+          </div>
+          <div class="ai-feature showpiece">
+            <div class="ai-idx">05</div>
+            <div>
+              <div class="ai-name">Agentic Claim Processing</div>
+              <div class="ai-desc">Multi-step agent: validate → check coverage (tool) → request missing info → draft recommendation. The showpiece portfolio artifact.</div>
+            </div>
+            <div class="showpiece-badge">Showpiece</div>
+          </div>
+          <div class="ai-feature">
+            <div class="ai-idx">06</div>
+            <div>
+              <div class="ai-name">Evaluation Harness</div>
+              <div class="ai-desc">Quantitative measurement of AI feature quality and regression testing.</div>
+            </div>
+          </div>
+        </div>
+        <br>
+        <div class="prose" style="font-size:12.5px; color:var(--text-muted);">Each AI feature maps to a CCA-F exam domain — the build doubles as certification preparation evidence.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ PHASE A ═══ -->
+  <div class="tab-pane" id="tab-phaseA">
+    <div class="pane-header">
+      <div class="pane-eyebrow">§9 · Software Engineering Fluency</div>
+      <div class="pane-title">Phase A · Build Order</div>
+      <div class="pane-subtitle">Vertical slices — smallest end-to-end first. Never all-backend then all-frontend.</div>
+    </div>
+    <div class="pane-body">
+      <div class="section">
+        <div class="section-label">Slice Sequence</div>
+        <div class="slice-list">
+          <div class="slice">
+            <div class="slice-num">S0</div>
+            <div class="slice-text"><strong>Environment &amp; repo</strong> <span>— Codespaces + repo + devcontainer with Python + Postgres</span></div>
+          </div>
+          <div class="slice">
+            <div class="slice-num">S1</div>
+            <div class="slice-text"><strong>Data model</strong> <span>— Customer / Policy / Claim entities + ADR</span></div>
+          </div>
+          <div class="slice">
+            <div class="slice-num">S2</div>
+            <div class="slice-text"><strong>First end-to-end</strong> <span>— create + read a claim via FastAPI → Postgres, no auth</span></div>
+          </div>
+          <div class="slice">
+            <div class="slice-num">S3</div>
+            <div class="slice-text"><strong>Tests + logging</strong> <span>— pytest + structured logging on the claim path</span></div>
+          </div>
+          <div class="slice">
+            <div class="slice-num">S4</div>
+            <div class="slice-text"><strong>Authentication</strong> <span>— JWT; protect endpoints; ADR</span></div>
+          </div>
+          <div class="slice">
+            <div class="slice-num">S5</div>
+            <div class="slice-text"><strong>Minimal frontend</strong> <span>— React: list/view/create claims</span></div>
+          </div>
+          <div class="slice">
+            <div class="slice-num">S6</div>
+            <div class="slice-text"><strong>Containerize, deploy, CI</strong> <span>— Docker → AWS App Runner → GitHub Actions</span></div>
+          </div>
+        </div>
+        <br>
+        <div class="prose" style="font-size:12.5px;">→ then expand domain features, then begin the AI subsystem (Phase D)</div>
+      </div>
+      <div class="section">
+        <div class="section-label">Essential Resources (skim for what unblocks the next slice)</div>
+        <div class="resource-list">
+          <div class="resource-item">
+            <div class="r-code">A1</div>
+            <div class="r-body"><strong>Python:</strong> Real Python (realpython.com) — project structure, typing, venvs; uv docs (docs.astral.sh/uv).</div>
+          </div>
+          <div class="resource-item">
+            <div class="r-code">A2</div>
+            <div class="r-body"><strong>Git:</strong> Learn Git Branching (learngitbranching.js.org); Atlassian Git tutorials; Pro Git ch. 2–3.</div>
+          </div>
+          <div class="resource-item">
+            <div class="r-code">A3</div>
+            <div class="r-body"><strong>SQL/DB (biggest gap):</strong> SQLBolt; PostgreSQL Tutorial (postgresqltutorial.com); SQLAlchemy docs; Alembic; a relational-modeling primer.</div>
+          </div>
+          <div class="resource-item">
+            <div class="r-code">A4</div>
+            <div class="r-body"><strong>APIs:</strong> FastAPI tutorial (fastapi.tiangolo.com) — hands-on; FastAPI Security (OAuth2/JWT); Aaron Parecki's "OAuth 2.0 Simplified" for concepts.</div>
+          </div>
+          <div class="resource-item">
+            <div class="r-code">A5</div>
+            <div class="r-body"><strong>Backend structure:</strong> FastAPI "Bigger Applications"; The Twelve-Factor App (12factor.net).</div>
+          </div>
+          <div class="resource-item">
+            <div class="r-code">A6</div>
+            <div class="r-body"><strong>Testing:</strong> pytest docs; FastAPI "Testing"; <em>optional:</em> Architecture Patterns with Python (cosmicpython.com, free).</div>
+          </div>
+          <div class="resource-item">
+            <div class="r-code">A7</div>
+            <div class="r-body"><strong>Logging/observability:</strong> Python Logging HOWTO; structlog (structlog.org); a "logs/metrics/traces" primer.</div>
+          </div>
+          <div class="resource-item">
+            <div class="r-code">A8</div>
+            <div class="r-body"><strong>Frontend (enough):</strong> react.dev/learn; shadcn/ui (ui.shadcn.com) + Tailwind.</div>
+          </div>
+          <div class="resource-item">
+            <div class="r-code">A9</div>
+            <div class="r-body"><strong>Containers/deploy/CI:</strong> Docker "Get Started"; FastAPI "Deployment with Docker"; GitHub Actions ("Building and testing Python"); AWS App Runner docs.</div>
+          </div>
+          <div class="resource-item">
+            <div class="r-code">A10</div>
+            <div class="r-body"><strong>IDE/tooling:</strong> VS Code Python debugger; Claude Code as a directed pair. Pull lessons from the Claude Code course by slice — see the Claude Code tab.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ CLAUDE CODE ═══ -->
+  <div class="tab-pane" id="tab-claudecode">
+    <div class="pane-header">
+      <div class="pane-eyebrow">§9a · Tooling</div>
+      <div class="pane-title">Claude Code Course</div>
+      <div class="pane-subtitle">65-lesson course mapped to your slice sequence. Pull lessons when each slice demands them — don't watch ahead.</div>
+    </div>
+    <div class="pane-body">
+      <div class="section">
+        <div class="callout callout-amber">
+          <strong>~20 lessons are irrelevant to your stack.</strong> Firebase, Figma, and Vercel lessons are marked skip — your stack is Python/FastAPI/Postgres on AWS App Runner. Watching them costs time with no return.
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-label">Before Slice 0 — Watch First (Foundation)</div>
+        <div class="course-block">
+          <div class="course-block-head"><span class="cb-label">Core Operating Manual</span><span class="cb-when">Before opening the repo</span></div>
+          <div class="course-block-body">
+            <div class="lesson-tags">
+              <span class="lesson-tag">L1 Why Claude Code?</span>
+              <span class="lesson-tag">L2 Installing Claude Code</span>
+              <span class="lesson-tag">L4 Asking Claude Code Questions</span>
+              <span class="lesson-tag">L5 Making Code Changes</span>
+              <span class="lesson-tag">L6 Conversation Management</span>
+              <span class="lesson-tag">L7 Models and Usage</span>
+              <span class="lesson-tag">L8 Slash Commands</span>
+              <span class="lesson-tag">L9 The CLAUDE.md File</span>
+              <span class="lesson-tag">L10 Adding Files as Context</span>
+              <span class="lesson-tag">L12 The Context Window</span>
+              <span class="lesson-tag">L13 Tools</span>
+              <span class="lesson-tag">L14 Permissions &amp; Allowed Tools</span>
+              <span class="lesson-tag">L16 Bash Mode</span>
+            </div>
+            <div class="cb-rationale">These 13 lessons are the operating manual. You need them before you open the repo, not after.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-label">Slices 0–1 · Environment + Data Model</div>
+        <div class="course-block">
+          <div class="course-block-head"><span class="cb-label">Spec-Driven Workflow &amp; Plan Mode</span><span class="cb-when">Before writing your first model</span></div>
+          <div class="course-block-body">
+            <div class="lesson-tags">
+              <span class="lesson-tag">L3 Getting the Project</span>
+              <span class="lesson-tag">L15 Custom Commands</span>
+              <span class="lesson-tag">L17 Command Arguments</span>
+              <span class="lesson-tag">L21 A Spec-Driven Workflow</span>
+              <span class="lesson-tag">L22 Making a /spec Command</span>
+              <span class="lesson-tag">L23 Creating a New Spec</span>
+              <span class="lesson-tag">L24 Plan Mode</span>
+              <span class="lesson-tag">L25 Extended Thinking</span>
+              <span class="lesson-tag">L26 Updating the CLAUDE.md File</span>
+            </div>
+            <div class="cb-rationale">Spec-driven workflow and plan mode are exactly how you'll approach each slice. Set up your CLAUDE.md and /spec command before you write your first model.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-label">Slices 2–3 · First End-to-End + Tests</div>
+        <div class="course-block">
+          <div class="course-block-head"><span class="cb-label">Hooks &amp; Context</span><span class="cb-when">Once you have a real codebase</span></div>
+          <div class="course-block-body">
+            <div class="lesson-tags">
+              <span class="lesson-tag">L11 Adding Images as Context</span>
+              <span class="lesson-tag">L18 Making a Hook</span>
+              <span class="lesson-tag">L19 Using jq</span>
+              <span class="lesson-tag">L20 Using Prettier in a Hook</span>
+            </div>
+            <div class="cb-rationale">Hooks become useful once you have a codebase to lint and format. jq is worth knowing when you start reading JSON API responses.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-label">Slices 4–6 · Auth + Frontend + Deploy</div>
+        <div class="course-block">
+          <div class="course-block-head"><span class="cb-label">Skills &amp; Plugins</span><span class="cb-when">Building the React frontend</span></div>
+          <div class="course-block-body">
+            <div class="lesson-tags">
+              <span class="lesson-tag">L40 What are Skills?</span>
+              <span class="lesson-tag">L41 Making a Skill</span>
+              <span class="lesson-tag">L43 Adding Plugins</span>
+              <span class="lesson-tag">L44 Using the Frontend Design Plugin</span>
+            </div>
+            <div class="cb-rationale">Skills and plugins become relevant when you're building the React frontend and want to pull in design patterns efficiently.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-label">Slice 6 · GitHub + CI</div>
+        <div class="course-block">
+          <div class="course-block-head"><span class="cb-label">GitHub Integration</span><span class="cb-when">Alongside Slice 6 deploy</span></div>
+          <div class="course-block-body">
+            <div class="lesson-tags">
+              <span class="lesson-tag">L54 Installing the GitHub CLI</span>
+              <span class="lesson-tag">L55 Creating a Repo with Claude Code</span>
+              <span class="lesson-tag">L56 Making Pull Requests</span>
+              <span class="lesson-tag">L57 The Claude GitHub App</span>
+              <span class="lesson-tag">L58 Automatic PR Reviews</span>
+              <span class="lesson-tag">L59 Tagging Claude in Comments</span>
+            </div>
+            <div class="cb-rationale">These pair directly with your GitHub Actions CI setup in Slice 6.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-label">Phase D · AI Subsystem</div>
+        <div class="course-block">
+          <div class="course-block-head"><span class="cb-label">MCP Servers &amp; Subagents</span><span class="cb-when">Building the agentic claim-processing feature</span></div>
+          <div class="course-block-body">
+            <div class="lesson-tags">
+              <span class="lesson-tag">L27 What Are MCP Servers?</span>
+              <span class="lesson-tag">L28 Adding an MCP Server</span>
+              <span class="lesson-tag">L29 Using Context7</span>
+              <span class="lesson-tag">L47 What are Subagents</span>
+              <span class="lesson-tag">L48 Design Extractor Subagent (pattern only)</span>
+              <span class="lesson-tag">L51 Code Quality Subagent</span>
+              <span class="lesson-tag">L52 Running Subagents in Parallel</span>
+              <span class="lesson-tag">L53 Workflow Summary</span>
+            </div>
+            <div class="cb-rationale">MCP and subagents are directly relevant to building the agentic claim-processing feature. Context7 pulls live library docs while you code against the Claude API.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-label">Skip Entirely</div>
+        <div class="course-block">
+          <div class="course-block-head skip-head">
+            <span class="cb-label">Firebase &amp; Figma Lessons</span>
+            <span class="skip-badge">⚠ Skip</span>
+          </div>
+          <div class="course-block-body">
+            <div class="lesson-tags">
+              <span class="lesson-tag skip">L30–39 Figma MCP, Firebase MCP, Firebase SDK, Auth/Features</span>
+              <span class="lesson-tag skip">L42 Using the Firestore Skill</span>
+              <span class="lesson-tag skip">L45–46 Heist Documents (Firebase app)</span>
+              <span class="lesson-tag skip">L49 Making Heist Cards</span>
+            </div>
+            <div class="cb-rationale">Firebase is not your stack. Skip entirely unless you revisit in a JS context. These ~10 lessons are built around a completely different architecture.</div>
+          </div>
+        </div>
+        <div class="course-block">
+          <div class="course-block-head skip-head">
+            <span class="cb-label">Vercel Deploy &amp; Web Tasks</span>
+            <span class="skip-badge">⚠ Defer</span>
+          </div>
+          <div class="course-block-body">
+            <div class="lesson-tags">
+              <span class="lesson-tag skip">L60 Claude Code on the Web (skim for awareness)</span>
+              <span class="lesson-tag skip">L61–65 Vercel deploy, branch previews, web tasks</span>
+            </div>
+            <div class="cb-rationale">Your deploy target is AWS App Runner, not Vercel. Skim L60 for awareness; skip the rest.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ PHASE D ═══ -->
+  <div class="tab-pane" id="tab-phaseD">
+    <div class="pane-header">
+      <div class="pane-eyebrow">§10 · GenAI / Agentic AI</div>
+      <div class="pane-title">Phase D · GenAI &amp; Agents</div>
+      <div class="pane-subtitle">Rides the same app. Knowledge spine + Anthropic Academy courses + engineering essays. Converges on CCA-F.</div>
+    </div>
+    <div class="pane-body">
+      <div class="section">
+        <div class="section-label">Approach</div>
+        <div class="prose">
+          Rides the same app (AI subsystem above). Knowledge spine = <strong>free Anthropic Academy courses on Skilljar</strong> + Anthropic engineering essays (<em>Building effective agents</em> first, then context engineering, Agent SDK, harnesses, tool-writing, MCP, multi-agent). Build on <strong>Bedrock / AgentCore</strong> — where AI meets AWS.
+        </div>
+      </div>
+      <div class="section">
+        <div class="section-label">Bedrock / AgentCore Components</div>
+        <table>
+          <thead><tr><th>AgentCore component</th><th>What it maps to</th></tr></thead>
+          <tbody>
+            <tr><td>Gateway</td><td>≈ Tools / MCP servers</td></tr>
+            <tr><td>Memory</td><td>≈ Knowledge / RAG</td></tr>
+            <tr><td>Observability</td><td>≈ Observation / evaluation harness</td></tr>
+            <tr><td>Runtime</td><td>≈ Action loop / agent executor</td></tr>
+            <tr><td>Identity / Policy</td><td>≈ Permissions / guardrails</td></tr>
+          </tbody>
+        </table>
+        <br>
+        <div class="prose" style="font-size:12.5px; color:var(--text-muted);">AgentCore is the managed enterprise version of the agent harness you'll build by hand first. Understanding the DIY version makes the managed service legible.</div>
+      </div>
+      <div class="section">
+        <div class="section-label">Study Resources (parallel from day one)</div>
+        <div class="resource-list">
+          <div class="resource-item">
+            <div class="r-code">D1</div>
+            <div class="r-body"><strong>Anthropic Academy (Skilljar — free):</strong> Claude 101 → API Fundamentals → MCP → Agent Skills. One module per week minimum.</div>
+          </div>
+          <div class="resource-item">
+            <div class="r-code">D2</div>
+            <div class="r-body"><strong>"Building Effective Agents"</strong> — Anthropic engineering essay. Read this first before anything else in Phase D.</div>
+          </div>
+          <div class="resource-item">
+            <div class="r-code">D3</div>
+            <div class="r-body"><strong>Context engineering, Agent SDK, harnesses, tool-writing, MCP, multi-agent</strong> — Anthropic engineering essays in sequence after D2.</div>
+          </div>
+          <div class="resource-item">
+            <div class="r-code">D4</div>
+            <div class="r-body"><strong>AWS Bedrock + AgentCore docs</strong> — pulled in when the AI subsystem build reaches each component.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ PHASES C & B ═══ -->
+  <div class="tab-pane" id="tab-phaseCB">
+    <div class="pane-header">
+      <div class="pane-eyebrow">§11 · Later Phases (summaries — expand at checkpoint)</div>
+      <div class="pane-title">Phases C &amp; B</div>
+      <div class="pane-subtitle">Summaries only. These are expanded at the re-plan checkpoints when you reach them.</div>
+    </div>
+    <div class="pane-body">
+      <div class="section">
+        <div class="section-label">Phase C — Modernization (Oct–Dec 2026)</div>
+        <div class="callout callout-accent">
+          <strong>Primarily learned on the job.</strong> Capture every team task as an ADR or target architecture. The separate modernize-an-app project runs alongside team delivery — not instead of it.
+        </div>
+        <div class="resource-list">
+          <div class="resource-item">
+            <div class="r-code">C1</div>
+            <div class="r-body"><strong>Core concepts:</strong> 7 Rs framework, legacy assessment methodology, strangler-fig pattern, decomposition, containerization, landing zones.</div>
+          </div>
+          <div class="resource-item">
+            <div class="r-code">C2</div>
+            <div class="r-body"><strong>Domain overlay:</strong> Finance and insurance-specific constraints — regulatory, data residency, legacy core systems.</div>
+          </div>
+          <div class="resource-item">
+            <div class="r-code">C3</div>
+            <div class="r-body"><strong>Resources (picked when you arrive):</strong> AWS Prescriptive Guidance + migration whitepapers.</div>
+          </div>
+        </div>
+      </div>
+      <div class="section">
+        <div class="section-label">Phase B — AWS Professional / SAP-C02 (Jan–Apr/May 2027)</div>
+        <div class="resource-list">
+          <div class="resource-item">
+            <div class="r-code">B1</div>
+            <div class="r-body"><strong>Core topics:</strong> Multi-account / AWS Organizations, advanced networking, security / IAM at depth, cost optimization, resilience / DR, complex migration (overlaps C), Well-Architected as a working tool.</div>
+          </div>
+          <div class="resource-item">
+            <div class="r-code">B2</div>
+            <div class="r-body"><strong>Study resources:</strong> SAP-C02 exam guide + a reputable course (Cantrill or Maarek — decide at checkpoint) + Tutorials Dojo practice exams.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ WORKFLOW ═══ -->
+  <div class="tab-pane" id="tab-workflow">
+    <div class="pane-header">
+      <div class="pane-eyebrow">§8 · Working Model</div>
+      <div class="pane-title">How We Work</div>
+      <div class="pane-subtitle">The cadence and contract between you and the mentor-architect role.</div>
+    </div>
+    <div class="pane-body">
+      <div class="section">
+        <div class="section-label">Cadence</div>
+        <div class="principles-list">
+          <div class="principle">
+            <div class="p-num">→</div>
+            <div>
+              <div class="p-title">Vertical slices</div>
+              <div class="p-body">Smallest end-to-end thing first, then grow. Never "all backend then all frontend." Each slice produces something that runs.</div>
+            </div>
+          </div>
+          <div class="principle">
+            <div class="p-num">→</div>
+            <div>
+              <div class="p-title">My role (Claude)</div>
+              <div class="p-body">Set the next slice, name the one resource to skim, define the task and its "done" test, then review and push back on decisions.</div>
+            </div>
+          </div>
+          <div class="principle">
+            <div class="p-num">→</div>
+            <div>
+              <div class="p-title">Your role</div>
+              <div class="p-body">Implement (understanding every line), write the ADR, bring code/blockers/ADRs back for review.</div>
+            </div>
+          </div>
+          <div class="principle">
+            <div class="p-num">→</div>
+            <div>
+              <div class="p-title">Cadence</div>
+              <div class="p-body">One slice at a time; checkpoint at the end of each. No skipping ahead before the slice is done and reviewed.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="section">
+        <div class="section-label">Billing Note — Claude Code (from June 15, 2026)</div>
+        <div class="callout callout-amber">
+          On Pro, Claude Code / Agent SDK usage draws from a separate <strong>~$20/month agentic credit pool</strong> at API rates, no rollover. Plan and reason in regular chat; spend agent runs on execution. Reconsider Max plan if you hit the cap consistently.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ CRAFT ═══ -->
+  <div class="tab-pane" id="tab-craft">
+    <div class="pane-header">
+      <div class="pane-eyebrow">§12 · Phase E — Throughout</div>
+      <div class="pane-title">Architecture Craft</div>
+      <div class="pane-subtitle">The habits that make certifications credible. Built continuously — not a discrete block.</div>
+    </div>
+    <div class="pane-body">
+      <div class="section">
+        <div class="section-label">Ongoing Habits</div>
+        <div class="principles-list">
+          <div class="principle">
+            <div class="p-num">E1</div>
+            <div>
+              <div class="p-title">ADR on every meaningful decision</div>
+              <div class="p-body">Target 15–25 over the year. The reasoning is the portfolio — not the code itself. Write it at the time; don't reconstruct later.</div>
+            </div>
+          </div>
+          <div class="principle">
+            <div class="p-num">E2</div>
+            <div>
+              <div class="p-title">Architecture brief + recorded walkthrough</div>
+              <div class="p-body">A 1-pager brief and a recorded 10-minute walkthrough of the finished app — the external-facing portfolio artifact.</div>
+            </div>
+          </div>
+          <div class="principle">
+            <div class="p-num">E3</div>
+            <div>
+              <div class="p-title">Discovery &amp; estimation practice</div>
+              <div class="p-body">Treat every NTT Data project sizing as a practice run. Use real constraints (time, cost, risk) and document the reasoning.</div>
+            </div>
+          </div>
+          <div class="principle">
+            <div class="p-num">E4</div>
+            <div>
+              <div class="p-title">Leverage management strengths</div>
+              <div class="p-body">Stakeholder communication and requirement translation are already strong. Use them as a differentiator in design reviews — not a soft skill but a technical edge.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ ENVIRONMENT ═══ -->
+  <div class="tab-pane" id="tab-env">
+    <div class="pane-header">
+      <div class="pane-eyebrow">§13 · Setup</div>
+      <div class="pane-title">Development Environment</div>
+      <div class="pane-subtitle">Designed for the corporate laptop constraint. Everything runs in the browser.</div>
+    </div>
+    <div class="pane-body">
+      <div class="section">
+        <div class="env-items">
+          <div class="env-item">
+            <div class="env-icon"><svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg></div>
+            <div>
+              <div class="env-name">GitHub Codespaces</div>
+              <div class="env-note">Full VS Code in the browser on the corporate laptop (nothing to install) and via desktop VS Code from home — same environment, same devcontainer, both places.<br><strong>Cost:</strong> 120 free core-hours/month per personal account, then ~$0.18/hr (a few dollars in heavy months).</div>
+            </div>
+          </div>
+          <div class="env-item">
+            <div class="env-icon"><svg viewBox="0 0 24 24"><ellipse cx="12" cy="6" rx="9" ry="3"/><path d="M3 6v6c0 1.66 4 3 9 3s9-1.34 9-3V6"/><path d="M3 12v6c0 1.66 4 3 9 3s9-1.34 9-3v-6"/></svg></div>
+            <div>
+              <div class="env-name">Neon Serverless PostgreSQL</div>
+              <div class="env-note">Free tier. Persists across Codespace rebuilds. Identical connection string from both machines — no local Postgres needed. Alternative: devcontainer Postgres for fully local operation.</div>
+            </div>
+          </div>
+          <div class="env-item">
+            <div class="env-icon"><svg viewBox="0 0 24 24"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg></div>
+            <div>
+              <div class="env-name">Python / FastAPI / React stack</div>
+              <div class="env-note">uv for package management; SQLAlchemy + Alembic for the DB layer; shadcn/ui + Tailwind for the frontend. All installed in the devcontainer.</div>
+            </div>
+          </div>
+          <div class="env-item">
+            <div class="env-icon"><svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 1010 10"/><path d="M12 6v6l4 2"/></svg></div>
+            <div>
+              <div class="env-name">AWS App Runner + GitHub Actions</div>
+              <div class="env-note">Deployment target for Slice 6. App Runner removes cluster management overhead; Actions provides the CI pipeline. Avoids ECS/Fargate complexity while still being genuine AWS.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="section">
+        <div class="section-label">Caveats &amp; Fallbacks</div>
+        <div class="callout callout-amber">
+          Confirm the corporate network allows GitHub/Codespaces before starting Slice 0. If blocked: use <strong>AWS CodeCatalyst</strong> (AWS-native, doubles as SAP practice) or build from home only.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ RISKS ═══ -->
+  <div class="tab-pane" id="tab-risks">
+    <div class="pane-header">
+      <div class="pane-eyebrow">§14–15 · Time, Risks &amp; Practical Notes</div>
+      <div class="pane-title">Risks &amp; Practical</div>
+      <div class="pane-subtitle">The honest constraints. Planning for what will actually go wrong.</div>
+    </div>
+    <div class="pane-body">
+      <div class="section">
+        <div class="section-label">Time Budget</div>
+        <div class="prose">~15–20 hrs/week, flexing with job demands. Phase C overlaps the day job in autumn, easing the load at the busiest stretch of the year.</div>
+      </div>
+      <div class="section">
+        <div class="section-label">Risk Register</div>
+        <table>
+          <thead><tr><th>Risk</th><th>Mitigation</th></tr></thead>
+          <tbody>
+            <tr>
+              <td>Sustaining pace through summer, one month into a demanding new role</td>
+              <td>Keep the core app lean — resist gold-plating. CCA-F study is non-negotiable even when app progress slips.</td>
+            </tr>
+            <tr>
+              <td>Corporate network blocking Codespaces</td>
+              <td>Confirm access first. Fallback: AWS CodeCatalyst or home-only builds.</td>
+            </tr>
+            <tr>
+              <td>CCA-F exam access requires Partner Network status</td>
+              <td>Confirm NTT Data's status immediately — it's a free registration but takes time to process.</td>
+            </tr>
+            <tr>
+              <td>Claude Code credit cap on Pro plan</td>
+              <td>Plan/reason in regular chat; spend agentic runs on execution only. Reconsider Max plan if cap is hit consistently.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="section">
+        <div class="section-label">Immediate Action Items</div>
+        <div class="action-items">
+          <div class="action-item">
+            <div class="action-num">1</div>
+            <div>
+              <div class="action-text">Confirm NTT Data's Claude Partner Network status</div>
+              <div class="action-detail">Required for CCA-F exam access. Orgs can join free but registration takes time. Escalate to the appropriate internal contact now.</div>
+            </div>
+          </div>
+          <div class="action-item">
+            <div class="action-num">2</div>
+            <div>
+              <div class="action-text">Set up Codespaces on both machines (Slice 0)</div>
+              <div class="action-detail">Initialise the GitHub repo; configure the devcontainer; verify access from the corporate laptop and from home.</div>
+            </div>
+          </div>
+          <div class="action-item">
+            <div class="action-num">3</div>
+            <div>
+              <div class="action-text">Begin CCA-F study in parallel (Anthropic Academy, Skilljar)</div>
+              <div class="action-detail">Enrol in Claude 101. Target one module per week alongside Phase A — this runs concurrently, not sequentially.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ STATUS ═══ -->
+  <div class="tab-pane" id="tab-status">
+    <div class="pane-header">
+      <div class="pane-eyebrow">§16 · Live Tracker</div>
+      <div class="pane-title">Status Log</div>
+      <div class="pane-subtitle">Update this at every slice checkpoint. This is the live state of the plan.</div>
+    </div>
+    <div class="pane-body">
+      <div class="section">
+        <div class="status-grid">
+          <div class="status-card">
+            <div class="sc-label">Current Phase</div>
+            <div class="sc-value">A — Not started</div>
+            <div class="sc-note">SWE Foundation</div>
+          </div>
+          <div class="status-card">
+            <div class="sc-label">Current Slice</div>
+            <div class="sc-value">Slice 0</div>
+            <div class="sc-note">Environment &amp; repo</div>
+          </div>
+          <div class="status-card">
+            <div class="sc-label">ADRs Written</div>
+            <div class="sc-value">0 / 15–25</div>
+            <div class="sc-note">Target: 15–25 over the year</div>
+          </div>
+          <div class="status-card">
+            <div class="sc-label">Certs Earned This Journey</div>
+            <div class="sc-value">—</div>
+            <div class="sc-note">Next: CCA-F · Dec 2026</div>
+          </div>
+        </div>
+      </div>
+      <div class="section">
+        <div class="section-label">Slice Tracker</div>
+        <div class="checklist">
+          <div class="check-item">
+            <div class="check-box"><svg viewBox="0 0 10 10"><path d="M2 5l2.5 2.5L8 3"/></svg></div>
+            <div class="check-text"><strong>Slice 0 — Environment &amp; repo</strong><span class="meta">Codespaces + devcontainer + Python + Postgres</span></div>
+          </div>
+          <div class="check-item">
+            <div class="check-box"><svg viewBox="0 0 10 10"><path d="M2 5l2.5 2.5L8 3"/></svg></div>
+            <div class="check-text"><strong>Slice 1 — Data model</strong><span class="meta">Customer / Policy / Claim + ADR</span></div>
+          </div>
+          <div class="check-item">
+            <div class="check-box"><svg viewBox="0 0 10 10"><path d="M2 5l2.5 2.5L8 3"/></svg></div>
+            <div class="check-text"><strong>Slice 2 — First end-to-end</strong><span class="meta">Create + read a claim via FastAPI → Postgres</span></div>
+          </div>
+          <div class="check-item">
+            <div class="check-box"><svg viewBox="0 0 10 10"><path d="M2 5l2.5 2.5L8 3"/></svg></div>
+            <div class="check-text"><strong>Slice 3 — Tests + logging</strong><span class="meta">pytest + structured logging</span></div>
+          </div>
+          <div class="check-item">
+            <div class="check-box"><svg viewBox="0 0 10 10"><path d="M2 5l2.5 2.5L8 3"/></svg></div>
+            <div class="check-text"><strong>Slice 4 — Authentication</strong><span class="meta">JWT + protected endpoints + ADR</span></div>
+          </div>
+          <div class="check-item">
+            <div class="check-box"><svg viewBox="0 0 10 10"><path d="M2 5l2.5 2.5L8 3"/></svg></div>
+            <div class="check-text"><strong>Slice 5 — Minimal frontend</strong><span class="meta">React: list / view / create claims</span></div>
+          </div>
+          <div class="check-item">
+            <div class="check-box"><svg viewBox="0 0 10 10"><path d="M2 5l2.5 2.5L8 3"/></svg></div>
+            <div class="check-text"><strong>Slice 6 — Containerize, deploy, CI</strong><span class="meta">Docker → App Runner → GitHub Actions</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="section">
+        <div class="section-label">Checkpoint Log</div>
+        <div class="prose" style="color:var(--text-muted); font-style:italic;">No checkpoints completed yet. First checkpoint: end of Phase A.</div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<script>
+  function switchTab(id, el) {
+    document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    document.getElementById('tab-' + id).classList.add('active');
+    el.classList.add('active');
+    document.querySelector('.content').scrollTo(0, 0);
+  }
+</script>
+</body>
+</html>
