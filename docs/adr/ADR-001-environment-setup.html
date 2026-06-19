@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ADR-001 — Environment Setup</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #F7F7F5;
+      --surface: #FFFFFF;
+      --surface-2: #F0F0ED;
+      --border: #E2E2DC;
+      --text: #1A1A18;
+      --text-muted: #6B6B65;
+      --text-subtle: #A0A09A;
+      --green: #1E7A4A;
+      --green-bg: #EAF5EE;
+      --green-border: #B6DFC8;
+      --blue: #1A5FA5;
+      --blue-bg: #EAF1FB;
+      --blue-border: #B5D4F4;
+      --amber: #8A5400;
+      --amber-bg: #FDF3E0;
+      --amber-border: #FAC775;
+      --purple: #4A3BAD;
+      --purple-bg: #EEEDFE;
+      --purple-border: #AFA9EC;
+      --red: #A32D2D;
+      --red-bg: #FCEBEB;
+      --red-border: #F7C1C1;
+      --font: 'IBM Plex Sans', system-ui, sans-serif;
+      --mono: 'IBM Plex Mono', ui-monospace, monospace;
+    }
+
+    body {
+      font-family: var(--font);
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      padding: 48px 24px 80px;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .page { max-width: 820px; margin: 0 auto; }
+
+    /* HEADER */
+    .header {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 36px 40px;
+      margin-bottom: 24px;
+    }
+
+    .breadcrumb {
+      font-family: var(--mono);
+      font-size: 11px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--text-subtle);
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .breadcrumb .current { color: var(--green); }
+
+    .header-top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 24px;
+      flex-wrap: wrap;
+    }
+
+    h1 {
+      font-size: 26px;
+      font-weight: 600;
+      letter-spacing: -0.02em;
+      color: var(--text);
+      line-height: 1.25;
+    }
+    h1 span { color: var(--text-subtle); font-weight: 400; }
+
+    .meta-col {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      align-items: flex-end;
+      flex-shrink: 0;
+    }
+
+    .status-badge {
+      font-family: var(--mono);
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 5px 12px;
+      border-radius: 6px;
+      background: var(--green-bg);
+      color: var(--green);
+      border: 1px solid var(--green-border);
+    }
+
+    .meta-date {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--text-subtle);
+      letter-spacing: 0.04em;
+    }
+
+    .context-summary {
+      margin-top: 20px;
+      padding-top: 20px;
+      border-top: 1px solid var(--border);
+      font-size: 14px;
+      color: var(--text-muted);
+      line-height: 1.65;
+      max-width: 68ch;
+    }
+
+    /* SECTIONS */
+    section { margin-bottom: 20px; }
+
+    .section-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    .section-head {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 16px 24px;
+      border-bottom: 1px solid var(--border);
+      background: var(--surface-2);
+    }
+
+    .section-head .num {
+      font-family: var(--mono);
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      color: var(--text-subtle);
+    }
+
+    .section-head h2 {
+      font-size: 12px;
+      font-family: var(--mono);
+      letter-spacing: 0.13em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+
+    .section-body { padding: 24px; }
+
+    /* DECISIONS */
+    .decision {
+      display: grid;
+      grid-template-columns: 3px 1fr;
+      gap: 0 20px;
+      margin-bottom: 28px;
+    }
+    .decision:last-child { margin-bottom: 0; }
+
+    .decision-bar {
+      border-radius: 2px;
+      align-self: stretch;
+    }
+    .decision-bar.green { background: var(--green); }
+    .decision-bar.blue { background: var(--blue); }
+    .decision-bar.amber { background: var(--amber); }
+    .decision-bar.purple { background: var(--purple); }
+
+    .decision-content {}
+
+    .decision-title {
+      font-size: 14.5px;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 4px;
+    }
+
+    .decision-choice {
+      display: inline-block;
+      font-family: var(--mono);
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      padding: 3px 9px;
+      border-radius: 4px;
+      margin-bottom: 10px;
+    }
+    .decision-choice.green { background: var(--green-bg); color: var(--green); border: 1px solid var(--green-border); }
+    .decision-choice.blue { background: var(--blue-bg); color: var(--blue); border: 1px solid var(--blue-border); }
+    .decision-choice.amber { background: var(--amber-bg); color: var(--amber); border: 1px solid var(--amber-border); }
+    .decision-choice.purple { background: var(--purple-bg); color: var(--purple); border: 1px solid var(--purple-border); }
+
+    .decision-reasoning {
+      font-size: 13.5px;
+      color: var(--text-muted);
+      line-height: 1.6;
+    }
+
+    .rejected {
+      margin-top: 10px;
+      display: flex;
+      gap: 8px;
+      align-items: flex-start;
+      font-size: 12.5px;
+      color: var(--text-subtle);
+    }
+    .rejected-label {
+      font-family: var(--mono);
+      font-size: 10px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      padding: 2px 7px;
+      border-radius: 3px;
+      background: var(--red-bg);
+      color: var(--red);
+      border: 1px solid var(--red-border);
+      white-space: nowrap;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+
+    /* CONSEQUENCES */
+    .consequence-list { display: flex; flex-direction: column; gap: 12px; }
+    .consequence {
+      display: flex;
+      gap: 14px;
+      align-items: flex-start;
+      padding: 14px 16px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+    }
+    .consequence.neutral { background: var(--surface-2); }
+    .consequence.watch { background: var(--amber-bg); border-color: var(--amber-border); }
+    .consequence.good { background: var(--green-bg); border-color: var(--green-border); }
+
+    .consequence-tag {
+      font-family: var(--mono);
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 2px 7px;
+      border-radius: 3px;
+      white-space: nowrap;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+    .consequence.neutral .consequence-tag { background: var(--border); color: var(--text-muted); }
+    .consequence.watch .consequence-tag { background: var(--amber-border); color: var(--amber); }
+    .consequence.good .consequence-tag { background: var(--green-border); color: var(--green); }
+
+    .consequence p { font-size: 13.5px; color: var(--text-muted); line-height: 1.55; }
+    .consequence p strong { color: var(--text); font-weight: 600; }
+
+    /* FOOTER */
+    .footer {
+      margin-top: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 20px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .footer-left { font-family: var(--mono); font-size: 11px; color: var(--text-subtle); letter-spacing: 0.06em; }
+    .footer-right { font-family: var(--mono); font-size: 11px; color: var(--text-subtle); letter-spacing: 0.06em; }
+    .footer-right span { color: var(--purple); font-weight: 600; }
+  </style>
+</head>
+<body>
+<div class="page">
+
+  <!-- HEADER -->
+  <header class="header">
+    <div class="breadcrumb">
+      <span>Claims App</span>
+      <span>›</span>
+      <span>Architecture Decision Records</span>
+      <span>›</span>
+      <span class="current">ADR-001</span>
+    </div>
+    <div class="header-top">
+      <h1><span>ADR-001 —</span> Environment Setup</h1>
+      <div class="meta-col">
+        <span class="status-badge">Accepted</span>
+        <span class="meta-date">June 2026</span>
+      </div>
+    </div>
+    <p class="context-summary">
+      Starting a greenfield insurance claims application. Needed a development environment that works on a locked-down corporate laptop (no admin rights, restricted network) and from home, without duplicating setup across machines or relying on local installs.
+    </p>
+  </header>
+
+  <!-- DECISIONS -->
+  <section>
+    <div class="section-card">
+      <div class="section-head">
+        <span class="num">01</span>
+        <h2>Decisions</h2>
+      </div>
+      <div class="section-body">
+
+        <div class="decision">
+          <div class="decision-bar green"></div>
+          <div class="decision-content">
+            <div class="decision-title">Development environment</div>
+            <div class="decision-choice green">GitHub Codespaces</div>
+            <div class="decision-reasoning">
+              Corporate laptop has no admin rights and may block local Docker installs. Codespaces runs entirely in the browser — nothing to install, nothing to configure per machine. One cloud VM accessible from anywhere, same state each time.
+            </div>
+            <div class="rejected">
+              <span class="rejected-label">Rejected</span>
+              Local Docker Desktop — blocked by corporate policy; requires admin rights.
+            </div>
+          </div>
+        </div>
+
+        <div class="decision">
+          <div class="decision-bar blue"></div>
+          <div class="decision-content">
+            <div class="decision-title">Database</div>
+            <div class="decision-choice blue">devcontainer Postgres</div>
+            <div class="decision-reasoning">
+              Runs as a sidecar container alongside the app — no internet required, starts automatically with the environment, zero external accounts to manage. Data persists in a Docker volume across container restarts.
+            </div>
+            <div class="rejected">
+              <span class="rejected-label">Rejected</span>
+              Neon (managed cloud DB) — introduces a network dependency and external account. Remains a fallback if Codespaces storage becomes a constraint.
+            </div>
+          </div>
+        </div>
+
+        <div class="decision">
+          <div class="decision-bar amber"></div>
+          <div class="decision-content">
+            <div class="decision-title">Python version</div>
+            <div class="decision-choice amber">Python 3.12</div>
+            <div class="decision-reasoning">
+              Current stable release at project start. No legacy constraints pushing toward an older version. FastAPI and SQLAlchemy both support it fully. Gets the latest typing and performance improvements.
+            </div>
+            <div class="rejected">
+              <span class="rejected-label">Rejected</span>
+              Python 3.11 or below — no reason to accept an older runtime for a greenfield project.
+            </div>
+          </div>
+        </div>
+
+        <div class="decision">
+          <div class="decision-bar purple"></div>
+          <div class="decision-content">
+            <div class="decision-title">Web framework</div>
+            <div class="decision-choice purple">FastAPI</div>
+            <div class="decision-reasoning">
+              Generates OpenAPI docs automatically (Swagger UI at <code>/docs</code>), native async support, and uses Python type hints for request/response validation — keeping the codebase explicit and self-documenting from the start.
+            </div>
+            <div class="rejected">
+              <span class="rejected-label">Rejected</span>
+              Flask — no built-in validation or docs generation; requires more manual wiring. Django — too heavyweight for an API-first app with no CMS or admin panel need.
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- CONSEQUENCES -->
+  <section>
+    <div class="section-card">
+      <div class="section-head">
+        <span class="num">02</span>
+        <h2>Consequences</h2>
+      </div>
+      <div class="section-body">
+        <div class="consequence-list">
+
+          <div class="consequence good">
+            <span class="consequence-tag">Gain</span>
+            <p>Zero setup on any machine. Corporate laptop, home desktop, or any browser — same environment, same state, no configuration drift.</p>
+          </div>
+
+          <div class="consequence good">
+            <span class="consequence-tag">Gain</span>
+            <p>The <code>devcontainer</code> is the environment spec. Anyone who opens the repo gets an identical machine — reproducible by design, not by convention.</p>
+          </div>
+
+          <div class="consequence watch">
+            <span class="consequence-tag">Watch</span>
+            <p><strong>GitHub dependency.</strong> If GitHub is unavailable, work stops. Accepted tradeoff given the corporate laptop constraint — no viable local alternative.</p>
+          </div>
+
+          <div class="consequence watch">
+            <span class="consequence-tag">Watch</span>
+            <p><strong>Postgres data is ephemeral if the codespace is deleted</strong> (not stopped). Data lives in a Docker volume — migrations introduced in Slice 1 will make the schema recoverable from code, so only seed data would be lost.</p>
+          </div>
+
+          <div class="consequence neutral">
+            <span class="consequence-tag">Note</span>
+            <p>Free tier gives ~60 active hours/month on a 2-core machine. Sufficient for current pace. Revisit if development velocity increases significantly or compute-heavy tasks are introduced.</p>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <div class="footer">
+    <span class="footer-left">claims-app · docs/adr/ADR-001-environment-setup.md</span>
+    <span class="footer-right">ADR 1 of <span>~20 planned</span></span>
+  </div>
+
+</div>
+</body>
+</html>
