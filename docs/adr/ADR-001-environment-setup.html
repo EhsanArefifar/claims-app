@@ -125,6 +125,24 @@
       max-width: 68ch;
     }
 
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-family: var(--mono);
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--text-subtle);
+      text-decoration: none;
+      margin-bottom: 16px;
+      transition: color 180ms ease;
+    }
+    .back-link:hover {
+      color: var(--text);
+    }
+
     /* SECTIONS */
     section { margin-bottom: 20px; }
 
@@ -292,6 +310,7 @@
 
   <!-- HEADER -->
   <header class="header">
+    <a href="../index.html" class="back-link">← Back to main</a>
     <div class="breadcrumb">
       <span>Claims App</span>
       <span>›</span>

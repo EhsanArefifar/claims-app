@@ -57,6 +57,23 @@
     .badge.done { background: var(--green-dim); color: var(--green); }
     .badge.phase { background: var(--blue-dim); color: var(--blue); }
     .badge.slice { background: var(--purple-dim); color: var(--purple); }
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-family: var(--mono);
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--text-subtle);
+      text-decoration: none;
+      margin-bottom: 12px;
+      transition: color 180ms ease;
+    }
+    .back-link:hover {
+      color: var(--text-muted);
+    }
 
     /* SECTIONS */
     section { margin-bottom: 52px; }
@@ -166,6 +183,7 @@
 
   <!-- HEADER -->
   <header class="header">
+    <a href="index.html" class="back-link">← Back to main</a>
     <div class="breadcrumb">
       <span>Solution Architect Path</span>
       <span>›</span>
