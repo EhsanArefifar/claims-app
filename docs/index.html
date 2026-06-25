@@ -469,7 +469,7 @@
 
     <div class="stat-row">
       <div class="stat">
-        <div class="stat-num"><span id="stat-done" class="accent-green">1</span></div>
+        <div class="stat-num"><span id="stat-done" class="accent-green">2</span></div>
         <div class="stat-label">Slices done</div>
       </div>
       <div class="stat">
@@ -477,7 +477,7 @@
         <div class="stat-label">Total slices</div>
       </div>
       <div class="stat">
-        <div class="stat-num"><span id="stat-adrs" class="accent-amber">0</span></div>
+        <div class="stat-num"><span id="stat-adrs" class="accent-amber">2</span></div>
         <div class="stat-label">ADRs written</div>
       </div>
       <div class="stat">
@@ -488,11 +488,11 @@
 
     <div class="progress-wrap">
       <div class="progress-bar">
-        <div class="progress-fill" style="width: 5.5%"></div>
+        <div class="progress-fill" style="width: 11.1%"></div>
       </div>
       <div class="progress-label">
         <span>Jun 2026</span>
-        <span id="progress-pct">5.5% complete</span>
+        <span id="progress-pct">11.1% complete</span>
         <span>May 2027</span>
       </div>
     </div>
@@ -520,15 +520,15 @@
         </div>
       </a>
 
-      <a class="slice-card active" href="#">
+      <a class="slice-card done" href="PhaseA-Slice1.html">
         <div class="slice-top">
           <span class="slice-num">A · Slice 1</span>
-          <span class="slice-status status-active">▶ Active</span>
+          <span class="slice-status status-done">✔ Done</span>
         </div>
         <div class="slice-title">Data Model</div>
         <div class="slice-desc">Customer, Policy, Claim tables in Postgres via SQLAlchemy + Alembic. First migrations.</div>
         <div class="slice-footer">
-          <span class="slice-adr"><span class="dot"></span>ADR-001 — data model decisions</span>
+          <span class="slice-adr"><span class="dot"></span>ADR-002 — data model decisions</span>
           <span class="arrow-hint">→</span>
         </div>
       </a>
@@ -541,7 +541,7 @@
         <div class="slice-title">First End-to-End</div>
         <div class="slice-desc">Create + read a claim via FastAPI → Postgres. No auth yet. Swagger UI works end-to-end.</div>
         <div class="slice-footer">
-          <span class="slice-adr"><span class="dot"></span>ADR-002 — API shape</span>
+          <span class="slice-adr"><span class="dot"></span>ADR-003 — API shape</span>
         </div>
       </a>
 
@@ -771,9 +771,15 @@
           <td style="font-family:var(--mono); font-size:11px; color:var(--text-subtle)">A · Slice 0</td>
           <td><span class="slice-status status-done" style="font-size:9px">Done</span></td>
         </tr>
+        <tr>
+          <td><a class="adr-id" href="adr/ADR-002-data-model-db.html">ADR-002</a></td>
+          <td>Core data model — entities and tooling choices for customers, policies, and claims</td>
+          <td style="font-family:var(--mono); font-size:11px; color:var(--text-subtle)">A · Slice 1</td>
+          <td><span class="slice-status status-done" style="font-size:9px">Done</span></td>
+        </tr>
       </tbody>
     </table>
-    <div class="adr-empty">ADRs 002–015 unlock as slices complete · target 15–25 over the year</div>
+    <div class="adr-empty">ADRs 003–015 unlock as slices complete · target 15–25 over the year</div>
   </section>
 
   <!-- FOOTER -->

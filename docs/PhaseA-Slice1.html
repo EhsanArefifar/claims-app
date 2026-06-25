@@ -1,0 +1,648 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Slice 1 — Data Model · claims-app</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0d0f12;
+  --surface:#13161a;
+  --surface2:#1a1e24;
+  --border:#252a32;
+  --border2:#2e3540;
+  --text:#e8eaed;
+  --muted:#8b95a1;
+  --subtle:#4a5568;
+  --green:#34d399;
+  --green-dim:#0d3327;
+  --green-border:#1a5c44;
+  --blue:#60a5fa;
+  --blue-dim:#0d1f3c;
+  --blue-border:#1e3a6e;
+  --amber:#fbbf24;
+  --amber-dim:#2d1f06;
+  --amber-border:#5c3d0a;
+  --purple:#a78bfa;
+  --purple-dim:#1e1435;
+  --purple-border:#3d2a6e;
+  --red:#f87171;
+  --red-dim:#2d0f0f;
+  --red-border:#5c1f1f;
+  --mono:'IBM Plex Mono',ui-monospace,monospace;
+  --sans:'IBM Plex Sans',system-ui,sans-serif;
+  --radius:6px;
+  --radius-lg:10px;
+}
+html{scroll-behavior:smooth}
+body{font-family:var(--sans);background:var(--bg);color:var(--text);min-height:100vh;font-size:14px;line-height:1.6;-webkit-font-smoothing:antialiased}
+
+/* LAYOUT */
+.shell{display:grid;grid-template-columns:220px 1fr;min-height:100vh}
+.sidebar{background:var(--surface);border-right:1px solid var(--border);padding:28px 0;position:sticky;top:0;height:100vh;overflow-y:auto;flex-shrink:0}
+.main{padding:48px 56px 80px;max-width:860px}
+
+/* SIDEBAR */
+.sidebar-head{padding:0 20px 20px;border-bottom:1px solid var(--border);margin-bottom:16px}
+.sidebar-slice{font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--green);margin-bottom:4px}
+.sidebar-title{font-size:13px;font-weight:600;color:var(--text);line-height:1.3}
+.sidebar-section{padding:0 12px;margin-bottom:4px}
+.sidebar-section-label{font-family:var(--mono);font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--subtle);padding:8px 8px 4px}
+.nav-btn{display:block;width:100%;text-align:left;background:none;border:none;padding:6px 8px;border-radius:var(--radius);font-family:var(--mono);font-size:11px;color:var(--muted);cursor:pointer;transition:all .15s;line-height:1.4}
+.nav-btn:hover{background:var(--surface2);color:var(--text)}
+.nav-btn.active{background:var(--green-dim);color:var(--green);border-left:2px solid var(--green);padding-left:6px}
+
+/* HEADER */
+.page-eyebrow{font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--green);margin-bottom:10px}
+.page-title{font-size:26px;font-weight:600;letter-spacing:-.02em;color:var(--text);margin-bottom:8px;line-height:1.2}
+.page-sub{font-size:14px;color:var(--muted);margin-bottom:32px;line-height:1.6}
+.back-link{display:inline-flex;align-items:center;gap:6px;font-family:var(--mono);font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);text-decoration:none;margin-bottom:18px;transition:color .15s ease}
+.back-link:hover{color:var(--text)}
+.done-bar{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:40px}
+.done-chip{display:flex;align-items:center;gap:7px;padding:6px 12px;border-radius:20px;background:var(--green-dim);border:1px solid var(--green-border);font-family:var(--mono);font-size:11px;color:var(--green)}
+.done-chip::before{content:'';width:6px;height:6px;border-radius:50%;background:var(--green);flex-shrink:0}
+
+/* SECTION */
+.section{margin-bottom:48px;scroll-margin-top:24px}
+.section-label{font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--subtle);margin-bottom:10px}
+.section-title{font-size:18px;font-weight:600;color:var(--text);margin-bottom:12px;letter-spacing:-.01em}
+.prose{font-size:14px;color:var(--muted);line-height:1.7;margin-bottom:16px}
+.prose strong{color:var(--text);font-weight:600}
+hr.divider{border:none;border-top:1px solid var(--border);margin:40px 0}
+
+/* TABS (concept explainer) */
+.tabs-wrap{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;margin-bottom:32px}
+.tab-nav{display:flex;border-bottom:1px solid var(--border);overflow-x:auto;scrollbar-width:none}
+.tab-nav::-webkit-scrollbar{display:none}
+.tab-nav-btn{padding:10px 16px;background:none;border:none;border-bottom:2px solid transparent;font-family:var(--mono);font-size:11px;letter-spacing:.04em;color:var(--muted);cursor:pointer;white-space:nowrap;transition:all .15s;margin-bottom:-1px}
+.tab-nav-btn:hover{color:var(--text);background:var(--surface2)}
+.tab-nav-btn.active{color:var(--blue);border-bottom-color:var(--blue)}
+.tab-panel{display:none;padding:24px 28px}
+.tab-panel.active{display:block}
+
+/* CONCEPT CARDS */
+.concept-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;margin-bottom:20px}
+.concept-card{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px}
+.concept-card h4{font-size:13px;font-weight:600;color:var(--text);margin-bottom:5px}
+.concept-card p{font-size:12.5px;color:var(--muted);line-height:1.55}
+
+/* ANALOGY */
+.analogy{background:var(--blue-dim);border-left:3px solid var(--blue);border-radius:0 var(--radius) var(--radius) 0;padding:12px 16px;margin-bottom:16px}
+.analogy-label{font-family:var(--mono);font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--blue);margin-bottom:4px}
+.analogy p{font-size:13px;color:var(--muted);line-height:1.6}
+
+/* FLOW */
+.flow{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+.flow-step{background:var(--surface2);border:1px solid var(--border2);border-radius:var(--radius);padding:6px 12px;font-family:var(--mono);font-size:11px;color:var(--text)}
+.flow-arrow{color:var(--subtle);font-size:14px}
+
+/* ENTITY TABLE */
+.entity-block{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;margin-bottom:16px}
+.entity-row{display:grid;grid-template-columns:130px 1fr;gap:14px;align-items:start;padding:12px 16px;border-bottom:1px solid var(--border)}
+.entity-row:last-child{border-bottom:none}
+.entity-name{font-family:var(--mono);font-size:12px;font-weight:600;color:var(--text);padding-top:2px}
+.field-pills{display:flex;flex-wrap:wrap;gap:5px}
+.pill{font-family:var(--mono);font-size:10.5px;padding:2px 8px;border-radius:20px;background:var(--surface);border:1px solid var(--border2);color:var(--muted)}
+.pill.pk{background:var(--blue-dim);border-color:var(--blue-border);color:var(--blue)}
+.pill.fk{background:var(--amber-dim);border-color:var(--amber-border);color:var(--amber)}
+
+/* KEY LEGEND */
+.legend{display:flex;gap:14px;margin-bottom:16px}
+.legend-item{display:flex;align-items:center;gap:6px;font-family:var(--mono);font-size:11px;color:var(--muted)}
+.legend-dot{width:8px;height:8px;border-radius:2px;flex-shrink:0}
+
+/* TABLES */
+.data-table{width:100%;border-collapse:collapse;font-size:13px;margin-bottom:16px}
+.data-table th{text-align:left;padding:8px 12px;font-weight:500;font-family:var(--mono);font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--subtle);border-bottom:1px solid var(--border)}
+.data-table td{padding:8px 12px;border-bottom:1px solid var(--border);color:var(--muted);vertical-align:top;line-height:1.5}
+.data-table tr:last-child td{border-bottom:none}
+.data-table td:first-child{color:var(--text);font-family:var(--mono);font-size:12px}
+
+/* TASK STEPS */
+.steps{display:flex;flex-direction:column;gap:0}
+.step{display:flex;gap:0;position:relative}
+.step:not(:last-child) .step-line{position:absolute;left:16px;top:34px;bottom:0;width:1px;background:var(--border)}
+.step-num-wrap{width:32px;flex-shrink:0;display:flex;flex-direction:column;align-items:center}
+.step-num{width:32px;height:32px;border-radius:50%;background:var(--surface2);border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:12px;font-weight:600;color:var(--green);flex-shrink:0;z-index:1;position:relative}
+.step-body{flex:1;padding:4px 0 32px 18px}
+.step-title{font-size:14px;font-weight:600;color:var(--text);margin-bottom:6px;line-height:1.4}
+.step-desc{font-size:13px;color:var(--muted);line-height:1.6;margin-bottom:12px}
+
+/* CODE */
+pre{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px;overflow-x:auto;margin-bottom:12px;font-family:var(--mono);font-size:12px;line-height:1.7;color:var(--text)}
+code{font-family:var(--mono);font-size:12px}
+.inline-code{background:var(--surface2);border:1px solid var(--border);border-radius:3px;padding:1px 5px;font-family:var(--mono);font-size:12px;color:var(--text)}
+.kw{color:var(--blue)}
+.st{color:var(--green)}
+.cm{color:var(--subtle);font-style:italic}
+
+/* CALLOUTS */
+.callout{display:flex;gap:12px;border-radius:var(--radius);padding:12px 14px;margin-bottom:12px;font-size:13px;line-height:1.6}
+.callout-info{background:var(--blue-dim);border:1px solid var(--blue-border)}
+.callout-warn{background:var(--amber-dim);border:1px solid var(--amber-border)}
+.callout-success{background:var(--green-dim);border:1px solid var(--green-border)}
+.callout-err{background:var(--red-dim);border:1px solid var(--red-border)}
+.callout-icon{font-size:14px;flex-shrink:0;margin-top:1px}
+.callout-body{color:var(--muted)}
+.callout-body strong{font-weight:600}
+.callout-info .callout-body strong{color:var(--blue)}
+.callout-warn .callout-body strong{color:var(--amber)}
+.callout-success .callout-body strong{color:var(--green)}
+.callout-err .callout-body strong{color:var(--red)}
+
+/* VERIFY */
+.verify{display:flex;gap:10px;align-items:flex-start;background:var(--green-dim);border:1px solid var(--green-border);border-radius:var(--radius);padding:10px 14px;margin-bottom:12px}
+.verify-label{font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--green);flex-shrink:0;padding-top:1px}
+.verify-body{font-family:var(--mono);font-size:11.5px;color:var(--muted)}
+
+/* DONE TABLE */
+.done-table{width:100%;border-collapse:collapse;font-size:13px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden}
+.done-table th{text-align:left;padding:10px 14px;font-family:var(--mono);font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--subtle);background:var(--surface2);border-bottom:1px solid var(--border)}
+.done-table td{padding:10px 14px;border-bottom:1px solid var(--border);vertical-align:top}
+.done-table tr:last-child td{border-bottom:none}
+.done-table td:first-child{color:var(--text);font-weight:500}
+.done-table td:nth-child(2){font-family:var(--mono);font-size:11px;color:var(--green)}
+.done-table td:nth-child(3){color:var(--muted);font-size:12.5px}
+</style>
+</head>
+<body>
+
+<div class="shell">
+
+  <!-- SIDEBAR -->
+  <nav class="sidebar">
+    <div class="sidebar-head">
+      <div class="sidebar-slice">Slice 1</div>
+      <div class="sidebar-title">Data Model</div>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-section-label">Concepts</div>
+      <button class="nav-btn active" onclick="showSection('overview')">Big picture</button>
+      <button class="nav-btn" onclick="showSection('data-model')">Data model</button>
+      <button class="nav-btn" onclick="showSection('postgres')">PostgreSQL</button>
+      <button class="nav-btn" onclick="showSection('sqlalchemy')">SQLAlchemy</button>
+      <button class="nav-btn" onclick="showSection('alembic')">Alembic</button>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-section-label">Tasks</div>
+      <button class="nav-btn" onclick="showSection('prereq')">Before you start</button>
+      <button class="nav-btn" onclick="showSection('step1')">1 · Install deps</button>
+      <button class="nav-btn" onclick="showSection('step2')">2 · db.py</button>
+      <button class="nav-btn" onclick="showSection('step3')">3 · Models</button>
+      <button class="nav-btn" onclick="showSection('step4')">4 · Alembic init</button>
+      <button class="nav-btn" onclick="showSection('step5')">5 · Migration</button>
+      <button class="nav-btn" onclick="showSection('step6')">6 · Commit</button>
+      <button class="nav-btn" onclick="showSection('step7')">7 · ADR-002</button>
+      <button class="nav-btn" onclick="showSection('done')">Done ✓</button>
+    </div>
+  </nav>
+
+  <!-- MAIN -->
+  <main class="main">
+
+    <a href="index.html" class="back-link">← Back to main</a>
+    <div class="page-eyebrow">claims-app · Phase A</div>
+    <h1 class="page-title">Slice 1 — Data Model</h1>
+    <p class="page-sub">Build the PostgreSQL schema for Customer, Policy, and Claim using SQLAlchemy ORM and Alembic migrations. No endpoints yet — just the foundation everything else builds on.</p>
+    <div class="done-bar">
+      <div class="done-chip">alembic upgrade head runs clean</div>
+      <div class="done-chip">\dt shows three tables</div>
+      <div class="done-chip">ADR-002 committed</div>
+    </div>
+
+    <!-- ── CONCEPT: OVERVIEW ── -->
+    <section class="section" id="overview">
+      <div class="section-label">Concept</div>
+      <h2 class="section-title">Big picture — what is Slice 1 doing?</h2>
+      <p class="prose">Before writing any API endpoints, you need a place to store data. That means designing the <strong>shape</strong> of your data (the model), setting up the <strong>database</strong> (PostgreSQL), teaching Python to <strong>talk to it</strong> (SQLAlchemy), and building a system to <strong>evolve it safely</strong> over time (Alembic).</p>
+
+      <div class="concept-grid">
+        <div class="concept-card"><h4>Data model</h4><p>The blueprint — what things exist, what fields they have, how they relate. Like an architect's floor plan before any concrete is poured.</p></div>
+        <div class="concept-card"><h4>PostgreSQL</h4><p>The actual storage system. Holds your data in structured tables on disk and knows how to find, save, and update it reliably.</p></div>
+        <div class="concept-card"><h4>SQLAlchemy</h4><p>A Python library letting you describe tables as Python classes and talk to the database in Python — no raw SQL required.</p></div>
+        <div class="concept-card"><h4>Alembic</h4><p>A migration tool. When you change your model later, Alembic generates the SQL scripts to update the database without losing data.</p></div>
+        <div class="concept-card"><h4>ADR</h4><p>Architectural Decision Record. A short doc explaining why you made a key technical choice — your portfolio evidence and future-self's best friend.</p></div>
+      </div>
+
+      <div class="analogy">
+        <div class="analogy-label">Analogy</div>
+        <p>Imagine building a filing cabinet system for an insurance office. The <strong>data model</strong> is the design for how many drawers and what labels go inside. <strong>PostgreSQL</strong> is the physical cabinet. <strong>SQLAlchemy</strong> is the office manager who files and retrieves things for you. <strong>Alembic</strong> is the system for reorganising the cabinet when you need a new drawer — without losing anyone's files.</p>
+      </div>
+
+      <div class="flow">
+        <div class="flow-step">Design the shape</div><div class="flow-arrow">→</div>
+        <div class="flow-step">Write Python models</div><div class="flow-arrow">→</div>
+        <div class="flow-step">Generate migration</div><div class="flow-arrow">→</div>
+        <div class="flow-step">Tables in Postgres</div><div class="flow-arrow">→</div>
+        <div class="flow-step">Write ADR</div>
+      </div>
+    </section>
+
+    <hr class="divider">
+
+    <!-- ── CONCEPT: DATA MODEL ── -->
+    <section class="section" id="data-model">
+      <div class="section-label">Concept</div>
+      <h2 class="section-title">Data model</h2>
+      <p class="prose">A data model defines what <strong>things</strong> your app needs to remember, what <strong>information</strong> each thing has (fields), and how those things <strong>relate</strong> to each other. Think of it as the agreed structure everyone works from.</p>
+
+      <div class="analogy">
+        <div class="analogy-label">Analogy</div>
+        <p>A spreadsheet has column headers — Name, Email, Phone. That's a data model. A relational data model is like multiple related spreadsheets where rows in one sheet can point to rows in another.</p>
+      </div>
+
+      <p class="prose" style="margin-bottom:10px"><strong>Your three entities and their fields</strong></p>
+      <div class="legend" style="margin-bottom:10px">
+        <div class="legend-item"><div class="legend-dot" style="background:var(--blue)"></div>PK — Primary Key (unique row identifier)</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--amber)"></div>FK — Foreign Key (points to another table)</div>
+      </div>
+      <div class="entity-block">
+        <div class="entity-row">
+          <div class="entity-name">Customer</div>
+          <div class="field-pills">
+            <span class="pill pk">id</span><span class="pill">full_name</span><span class="pill">email</span><span class="pill">phone</span><span class="pill">created_at</span>
+          </div>
+        </div>
+        <div class="entity-row">
+          <div class="entity-name">Policy</div>
+          <div class="field-pills">
+            <span class="pill pk">id</span><span class="pill fk">customer_id</span><span class="pill">policy_number</span><span class="pill">type</span><span class="pill">status</span><span class="pill">start_date</span><span class="pill">end_date</span>
+          </div>
+        </div>
+        <div class="entity-row">
+          <div class="entity-name">Claim</div>
+          <div class="field-pills">
+            <span class="pill pk">id</span><span class="pill fk">policy_id</span><span class="pill">reference_number</span><span class="pill">status</span><span class="pill">description</span><span class="pill">incident_date</span><span class="pill">filed_at</span><span class="pill">updated_at</span>
+          </div>
+        </div>
+      </div>
+
+      <p class="prose"><strong>Relationships:</strong> one Customer → many Policies → many Claims. This is a one-to-many relationship, the most common kind in relational databases.</p>
+      <div class="flow">
+        <div class="flow-step">1 Customer</div><div class="flow-arrow">→ many</div>
+        <div class="flow-step">Policies</div><div class="flow-arrow">→ many</div>
+        <div class="flow-step">Claims</div>
+      </div>
+    </section>
+
+    <hr class="divider">
+
+    <!-- ── CONCEPT: POSTGRES ── -->
+    <section class="section" id="postgres">
+      <div class="section-label">Concept</div>
+      <h2 class="section-title">PostgreSQL</h2>
+      <p class="prose">PostgreSQL stores data in <strong>tables</strong> (rows and columns) on disk and ensures reliability even if the server crashes mid-write. Your FastAPI app connects to it using a <strong>connection URL</strong> stored in an environment variable.</p>
+
+      <div class="analogy">
+        <div class="analogy-label">Mental model</div>
+        <p>Think of Postgres as Excel — but it runs as a server, handles thousands of users at once, enforces rules (you can't have a policy without a customer), and never loses data.</p>
+      </div>
+
+      <div class="concept-grid">
+        <div class="concept-card"><h4>Tables</h4><p>Each entity becomes a table. Columns are the fields, rows are the actual records.</p></div>
+        <div class="concept-card"><h4>Constraints</h4><p>Rules enforced by the DB — UNIQUE (no two emails the same), NOT NULL (must have a value), FOREIGN KEY (that customer_id must actually exist).</p></div>
+        <div class="concept-card"><h4>SQL</h4><p>The language you use to talk to it. SELECT gets data, INSERT adds it, UPDATE changes it. Alembic and SQLAlchemy write most of this for you.</p></div>
+      </div>
+
+      <p class="prose" style="margin-bottom:8px"><strong>The connection URL format</strong></p>
+<pre><span class="cm"># format</span>
+postgresql://user:password@host:5432/dbname
+
+<span class="cm"># in your devcontainer</span>
+DATABASE_URL=postgresql://postgres:postgres@db:5432/claims_db</pre>
+
+      <div class="callout callout-info">
+        <div class="callout-icon">💡</div>
+        <div class="callout-body"><strong>Why not docker ps?</strong> Inside a Codespace you are already running <em>inside</em> the devcontainer — the Docker CLI is not available from there. Use <span class="inline-code">pg_isready -h db -p 5432</span> instead, which talks directly to the Postgres service over the internal network.</div>
+      </div>
+    </section>
+
+    <hr class="divider">
+
+    <!-- ── CONCEPT: SQLALCHEMY ── -->
+    <section class="section" id="sqlalchemy">
+      <div class="section-label">Concept</div>
+      <h2 class="section-title">SQLAlchemy — Python talks to Postgres</h2>
+      <p class="prose">SQLAlchemy is an ORM (Object Relational Mapper). It lets you define your tables as <strong>Python classes</strong> and translates your Python code into SQL automatically — safer and less error-prone than writing raw SQL strings.</p>
+
+      <div class="analogy">
+        <div class="analogy-label">ORM analogy</div>
+        <p>Instead of writing <span class="inline-code">INSERT INTO customers VALUES (...)</span> by hand, you write <span class="inline-code">db.add(Customer(name="María"))</span>. SQLAlchemy handles the rest. Same result, much safer.</p>
+      </div>
+
+      <div class="concept-grid" style="margin-bottom:20px">
+        <div class="concept-card"><h4>Engine</h4><p>The connection to the database. Created once at startup from DATABASE_URL. Manages the connection pool.</p></div>
+        <div class="concept-card"><h4>Session</h4><p>A unit of work. Open a session, make changes, commit. If anything fails, roll back — like a transaction.</p></div>
+        <div class="concept-card"><h4>Base + Models</h4><p>Base is the parent class all your models inherit from. Each model (Customer, Policy, Claim) maps to a table.</p></div>
+      </div>
+
+      <p class="prose" style="margin-bottom:8px"><strong>What a model looks like</strong></p>
+<pre><span class="kw">class</span> Customer(Base):
+    __tablename__ = <span class="st">"customers"</span>
+
+    id = mapped_column(UUID(as_uuid=<span class="kw">True</span>), primary_key=<span class="kw">True</span>, default=uuid.uuid4)
+    full_name = mapped_column(String, nullable=<span class="kw">False</span>)
+    email = mapped_column(String, unique=<span class="kw">True</span>, nullable=<span class="kw">False</span>)
+    created_at = mapped_column(DateTime, default=datetime.utcnow)</pre>
+      <p class="prose">Each <span class="inline-code">mapped_column()</span> call defines one field. The keyword arguments (<span class="inline-code">primary_key</span>, <span class="inline-code">nullable</span>, <span class="inline-code">unique</span>) become database constraints.</p>
+    </section>
+
+    <hr class="divider">
+
+    <!-- ── CONCEPT: ALEMBIC ── -->
+    <section class="section" id="alembic">
+      <div class="section-label">Concept</div>
+      <h2 class="section-title">Alembic — managing change safely</h2>
+      <p class="prose">Once your app is live, you can't delete and recreate the database every time you change a model — you'd lose all data. Alembic tracks every schema change and generates SQL scripts to apply them step by step.</p>
+
+      <div class="analogy">
+        <div class="analogy-label">Git for your database</div>
+        <p>Think of Alembic like Git for your database schema. Each migration is a commit — it describes exactly what changed and can be applied or reversed. You can see the full history of how the schema evolved.</p>
+      </div>
+
+      <div class="concept-grid" style="margin-bottom:20px">
+        <div class="concept-card"><h4>autogenerate</h4><p>Alembic compares your SQLAlchemy models against the current database state and writes the migration for you. You review, then run.</p></div>
+        <div class="concept-card"><h4>upgrade head</h4><p>Apply all pending migrations up to the latest version. "Head" means the tip of the migration chain.</p></div>
+        <div class="concept-card"><h4>downgrade</h4><p>Each migration also has an undo script. If something goes wrong, you can roll the schema back to a previous state.</p></div>
+      </div>
+
+      <p class="prose" style="margin-bottom:8px"><strong>What a generated migration looks like</strong></p>
+<pre><span class="kw">def</span> upgrade() -> <span class="kw">None</span>:
+    op.create_table(
+        <span class="st">'customers'</span>,
+        sa.Column(<span class="st">'id'</span>, postgresql.UUID(), nullable=<span class="kw">False</span>),
+        sa.Column(<span class="st">'full_name'</span>, sa.String(), nullable=<span class="kw">False</span>),
+        sa.Column(<span class="st">'email'</span>, sa.String(), nullable=<span class="kw">False</span>),
+        sa.PrimaryKeyConstraint(<span class="st">'id'</span>),
+        sa.UniqueConstraint(<span class="st">'email'</span>)
+    )
+
+<span class="kw">def</span> downgrade() -> <span class="kw">None</span>:
+    op.drop_table(<span class="st">'customers'</span>)  <span class="cm"># how to undo it</span></pre>
+
+      <div class="callout callout-warn">
+        <div class="callout-icon">⚠️</div>
+        <div class="callout-body"><strong>Common gotcha:</strong> if the <span class="inline-code">run_migrations_online</span> function in <span class="inline-code">env.py</span> is missing the <span class="inline-code">with connectable.connect()</span> block, Alembic silently generates an <strong>empty migration</strong> — upgrade() just says <span class="inline-code">pass</span>. Always read the generated file before running it.</div>
+      </div>
+    </section>
+
+    <hr class="divider">
+
+    <!-- ── TASKS ── -->
+    <section class="section" id="prereq">
+      <div class="section-label">Tasks</div>
+      <h2 class="section-title">Before you start</h2>
+      <p class="prose">Open your Codespace and verify Postgres is reachable:</p>
+<pre>pg_isready -h db -p 5432</pre>
+      <div class="verify"><span class="verify-label">Expect</span><span class="verify-body">db:5432 - accepting connections</span></div>
+      <p class="prose">If not, rebuild the devcontainer: <strong>Ctrl+Shift+P → Rebuild Container</strong>.</p>
+    </section>
+
+    <hr class="divider">
+
+    <section class="section" id="step1">
+      <div class="section-label">Step 1</div>
+      <h2 class="section-title">Install dependencies</h2>
+      <p class="prose">Check whether a virtual environment is already active — you'll see <span class="inline-code">(.venv)</span> at the start of your terminal prompt. If not:</p>
+<pre>python -m venv .venv
+source .venv/bin/activate</pre>
+      <div class="callout callout-info">
+        <div class="callout-icon">💡</div>
+        <div class="callout-body"><strong>Why a venv?</strong> An isolated copy of Python with its own packages. Without one, every package goes into the system Python — shared across all projects, causing version conflicts. Good habit to build now even inside a Codespace.</div>
+      </div>
+      <p class="prose">Install the three packages:</p>
+<pre>pip install sqlalchemy alembic psycopg2-binary</pre>
+      <p class="prose">Pin the versions automatically:</p>
+<pre>pip freeze > requirements.txt</pre>
+      <div class="callout callout-info">
+        <div class="callout-icon">💡</div>
+        <div class="callout-body"><span class="inline-code">pip freeze</span> lists every installed package and its exact version. The <span class="inline-code">></span> writes that to the file — captures real installed versions, not guessed ones.</div>
+      </div>
+      <div class="verify"><span class="verify-label">Verify</span><span class="verify-body">python -c "import sqlalchemy, alembic, psycopg2; print('ok')"  →  ok</span></div>
+    </section>
+
+    <hr class="divider">
+
+    <section class="section" id="step2">
+      <div class="section-label">Step 2</div>
+      <h2 class="section-title">Create app/db.py</h2>
+      <p class="prose">This file does three things: creates the engine (connection to Postgres), creates SessionLocal (how you open/close transactions), and creates Base (parent class all models inherit from).</p>
+<pre>mkdir -p app
+touch app/db.py</pre>
+      <p class="prose" style="margin-bottom:8px">Paste this into <span class="inline-code">app/db.py</span>:</p>
+<pre><span class="kw">import</span> os
+<span class="kw">from</span> sqlalchemy <span class="kw">import</span> create_engine
+<span class="kw">from</span> sqlalchemy.orm <span class="kw">import</span> sessionmaker, DeclarativeBase
+
+DATABASE_URL = os.environ[<span class="st">"DATABASE_URL"</span>]
+
+engine = create_engine(DATABASE_URL)
+SessionLocal = sessionmaker(bind=engine)
+
+<span class="kw">class</span> Base(DeclarativeBase):
+    <span class="kw">pass</span></pre>
+      <div class="verify"><span class="verify-label">Verify</span><span class="verify-body">python -c "from app.db import Base; print('ok')"  →  ok</span></div>
+    </section>
+
+    <hr class="divider">
+
+    <section class="section" id="step3">
+      <div class="section-label">Step 3</div>
+      <h2 class="section-title">Write the three models</h2>
+<pre>mkdir -p app/models
+touch app/models/__init__.py
+touch app/models/customer.py
+touch app/models/policy.py
+touch app/models/claim.py</pre>
+
+      <p class="prose" style="margin-bottom:8px"><strong>app/models/customer.py</strong></p>
+<pre><span class="kw">import</span> uuid
+<span class="kw">from</span> datetime <span class="kw">import</span> datetime
+<span class="kw">from</span> sqlalchemy <span class="kw">import</span> String, DateTime
+<span class="kw">from</span> sqlalchemy.orm <span class="kw">import</span> Mapped, mapped_column
+<span class="kw">from</span> sqlalchemy.dialects.postgresql <span class="kw">import</span> UUID
+<span class="kw">from</span> app.db <span class="kw">import</span> Base
+
+<span class="kw">class</span> Customer(Base):
+    __tablename__ = <span class="st">"customers"</span>
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=<span class="kw">True</span>), primary_key=<span class="kw">True</span>, default=uuid.uuid4)
+    full_name: Mapped[str] = mapped_column(String, nullable=<span class="kw">False</span>)
+    email: Mapped[str] = mapped_column(String, unique=<span class="kw">True</span>, nullable=<span class="kw">False</span>)
+    phone: Mapped[str | <span class="kw">None</span>] = mapped_column(String, nullable=<span class="kw">True</span>)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, nullable=<span class="kw">False</span>)</pre>
+
+      <p class="prose" style="margin-bottom:8px"><strong>app/models/policy.py</strong></p>
+<pre><span class="kw">import</span> uuid
+<span class="kw">from</span> datetime <span class="kw">import</span> datetime, date
+<span class="kw">from</span> sqlalchemy <span class="kw">import</span> String, DateTime, Date, ForeignKey
+<span class="kw">from</span> sqlalchemy.orm <span class="kw">import</span> Mapped, mapped_column
+<span class="kw">from</span> sqlalchemy.dialects.postgresql <span class="kw">import</span> UUID
+<span class="kw">from</span> app.db <span class="kw">import</span> Base
+
+<span class="kw">class</span> Policy(Base):
+    __tablename__ = <span class="st">"policies"</span>
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=<span class="kw">True</span>), primary_key=<span class="kw">True</span>, default=uuid.uuid4)
+    customer_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=<span class="kw">True</span>), ForeignKey(<span class="st">"customers.id"</span>), nullable=<span class="kw">False</span>)
+    policy_number: Mapped[str] = mapped_column(String, unique=<span class="kw">True</span>, nullable=<span class="kw">False</span>)
+    type: Mapped[str] = mapped_column(String, nullable=<span class="kw">False</span>)
+    status: Mapped[str] = mapped_column(String, nullable=<span class="kw">False</span>, default=<span class="st">"active"</span>)
+    start_date: Mapped[date] = mapped_column(Date, nullable=<span class="kw">False</span>)
+    end_date: Mapped[date | <span class="kw">None</span>] = mapped_column(Date, nullable=<span class="kw">True</span>)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, nullable=<span class="kw">False</span>)</pre>
+
+      <p class="prose" style="margin-bottom:8px"><strong>app/models/claim.py</strong></p>
+<pre><span class="kw">import</span> uuid
+<span class="kw">from</span> datetime <span class="kw">import</span> datetime, date
+<span class="kw">from</span> sqlalchemy <span class="kw">import</span> String, DateTime, Date, ForeignKey
+<span class="kw">from</span> sqlalchemy.orm <span class="kw">import</span> Mapped, mapped_column
+<span class="kw">from</span> sqlalchemy.dialects.postgresql <span class="kw">import</span> UUID
+<span class="kw">from</span> app.db <span class="kw">import</span> Base
+
+<span class="kw">class</span> Claim(Base):
+    __tablename__ = <span class="st">"claims"</span>
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=<span class="kw">True</span>), primary_key=<span class="kw">True</span>, default=uuid.uuid4)
+    policy_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=<span class="kw">True</span>), ForeignKey(<span class="st">"policies.id"</span>), nullable=<span class="kw">False</span>)
+    reference_number: Mapped[str] = mapped_column(String, unique=<span class="kw">True</span>, nullable=<span class="kw">False</span>)
+    status: Mapped[str] = mapped_column(String, nullable=<span class="kw">False</span>, default=<span class="st">"submitted"</span>)
+    description: Mapped[str | <span class="kw">None</span>] = mapped_column(String, nullable=<span class="kw">True</span>)
+    incident_date: Mapped[date] = mapped_column(Date, nullable=<span class="kw">False</span>)
+    filed_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, nullable=<span class="kw">False</span>)
+    updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=<span class="kw">False</span>)</pre>
+
+      <div class="verify"><span class="verify-label">Verify</span><span class="verify-body">python -c "from app.models.customer import Customer; print(Customer.__tablename__)"  →  customers</span></div>
+    </section>
+
+    <hr class="divider">
+
+    <section class="section" id="step4">
+      <div class="section-label">Step 4</div>
+      <h2 class="section-title">Initialise Alembic</h2>
+<pre>alembic init alembic</pre>
+
+      <p class="prose" style="margin-bottom:8px"><strong>Edit alembic.ini</strong> — find and replace this line:</p>
+<pre><span class="cm"># find:</span>
+sqlalchemy.url = driver://user:pass@localhost/dbname
+
+<span class="cm"># replace with:</span>
+sqlalchemy.url = %(DATABASE_URL)s</pre>
+
+      <p class="prose" style="margin-bottom:8px"><strong>Edit alembic/env.py</strong> — find the <span class="inline-code">target_metadata = None</span> block and replace it:</p>
+<pre><span class="kw">from</span> app.models.customer <span class="kw">import</span> Customer  <span class="cm"># noqa: F401</span>
+<span class="kw">from</span> app.models.policy <span class="kw">import</span> Policy      <span class="cm"># noqa: F401</span>
+<span class="kw">from</span> app.models.claim <span class="kw">import</span> Claim        <span class="cm"># noqa: F401</span>
+<span class="kw">from</span> app.db <span class="kw">import</span> Base
+
+target_metadata = Base.metadata</pre>
+
+      <p class="prose" style="margin-bottom:8px">Then replace the entire <span class="inline-code">run_migrations_online</span> function:</p>
+<pre><span class="kw">def</span> run_migrations_online() -> <span class="kw">None</span>:
+    <span class="kw">import</span> os
+    connectable = create_engine(os.environ[<span class="st">"DATABASE_URL"</span>])
+
+    <span class="kw">with</span> connectable.connect() <span class="kw">as</span> connection:
+        context.configure(
+            connection=connection,
+            target_metadata=target_metadata,
+        )
+        <span class="kw">with</span> context.begin_transaction():
+            context.run_migrations()</pre>
+
+      <div class="callout callout-warn">
+        <div class="callout-icon">⚠️</div>
+        <div class="callout-body"><strong>Critical:</strong> the <span class="inline-code">with connectable.connect()</span> block is required. Without it Alembic creates the engine and returns silently — generating an empty migration with <span class="inline-code">pass</span> in upgrade().</div>
+      </div>
+      <div class="verify"><span class="verify-label">Verify</span><span class="verify-body">alembic current  →  no error (may show "no current revision" — that's fine)</span></div>
+    </section>
+
+    <hr class="divider">
+
+    <section class="section" id="step5">
+      <div class="section-label">Step 5</div>
+      <h2 class="section-title">Generate and run the migration</h2>
+      <p class="prose">First, confirm Alembic can see your models:</p>
+<pre>python -c "from app.models.customer import Customer; from app.models.policy import Policy; from app.models.claim import Claim; from app.db import Base; print(list(Base.metadata.tables.keys()))"</pre>
+      <div class="verify"><span class="verify-label">Expect</span><span class="verify-body">['customers', 'policies', 'claims']</span></div>
+
+      <div class="callout callout-err">
+        <div class="callout-icon">🔴</div>
+        <div class="callout-body"><strong>If you see []:</strong> Alembic cannot see your models — go back and check the imports in env.py.<br><strong>If you see ImportError:</strong> Python can't find the app package. Make sure you're in the project root and that <span class="inline-code">app/__init__.py</span> exists: <span class="inline-code">touch app/__init__.py</span></div>
+      </div>
+
+      <p class="prose">If a previous empty migration exists, delete it first:</p>
+<pre>rm alembic/versions/*.py</pre>
+      <p class="prose">Generate the migration:</p>
+<pre>alembic revision --autogenerate -m "initial schema"</pre>
+      <p class="prose">Open the generated file in <span class="inline-code">alembic/versions/</span> and confirm <span class="inline-code">upgrade()</span> has <span class="inline-code">create_table</span> calls for all three tables. Then run it:</p>
+<pre>alembic upgrade head</pre>
+      <p class="prose">Verify the tables:</p>
+<pre>psql $DATABASE_URL -c "\dt"</pre>
+      <div class="verify"><span class="verify-label">Expect</span><span class="verify-body">alembic_version · claims · customers · policies</span></div>
+    </section>
+
+    <hr class="divider">
+
+    <section class="section" id="step6">
+      <div class="section-label">Step 6</div>
+      <h2 class="section-title">Commit</h2>
+<pre>git add app/db.py app/models/ alembic/ alembic.ini requirements.txt
+git commit -m "feat: add SQLAlchemy models and initial Alembic migration"</pre>
+    </section>
+
+    <hr class="divider">
+
+    <section class="section" id="step7">
+      <div class="section-label">Step 7</div>
+      <h2 class="section-title">Write ADR-002</h2>
+<pre>mkdir -p docs/adr
+touch docs/adr/ADR-002-data-model.md</pre>
+      <p class="prose">See the companion ADR-002 artifact for the full content to paste in. Then commit:</p>
+<pre>git add docs/adr/ADR-002-data-model.md
+git commit -m "docs: add ADR-002 data model decisions"</pre>
+    </section>
+
+    <hr class="divider">
+
+    <section class="section" id="done">
+      <div class="section-label">Slice 1</div>
+      <h2 class="section-title">Done ✓</h2>
+      <table class="done-table">
+        <thead><tr><th>Check</th><th>Command</th><th>Expected result</th></tr></thead>
+        <tbody>
+          <tr><td>Tables exist</td><td>psql $DATABASE_URL -c "\dt"</td><td>customers, policies, claims visible</td></tr>
+          <tr><td>Migration history</td><td>alembic history</td><td>one revision listed</td></tr>
+          <tr><td>Models importable</td><td>python -c "from app.models.claim import Claim"</td><td>no error</td></tr>
+          <tr><td>ADR committed</td><td>git log --oneline</td><td>docs: add ADR-002</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section class="section">
+      <div class="section-label">Next</div>
+      <h2 class="section-title">Architecture decision</h2>
+      <p class="prose">The schema decisions behind this slice are captured in <a href="adr/ADR-002-data-model-db.html">ADR-002</a>. Keep that ADR alongside the code so the model shape is documented and reviewable.</p>
+    </section>
+
+  </main>
+</div>
+
+<script>
+function showSection(id) {
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  const target = document.getElementById(id);
+  if (target) {
+    target.scrollIntoView({behavior:'smooth', block:'start'});
+  }
+  event.target.classList.add('active');
+}
+</script>
+</body>
+</html>

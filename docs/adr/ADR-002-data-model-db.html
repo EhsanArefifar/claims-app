@@ -1,0 +1,353 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ADR-002 — Core Data Model · claims-app</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#f7f7f5;
+  --surface:#ffffff;
+  --surface2:#f2f2ef;
+  --border:#e4e4e0;
+  --border2:#d4d4cf;
+  --text:#1a1a18;
+  --muted:#5a5a55;
+  --subtle:#9a9a94;
+  --accent:#1a4a2e;
+  --accent-bg:#edf4f0;
+  --accent-border:#b8d9c5;
+  --blue:#1a3a5c;
+  --blue-bg:#edf2f8;
+  --blue-border:#b8cfe0;
+  --amber:#5c3a00;
+  --amber-bg:#fdf5e6;
+  --amber-border:#e8c87a;
+  --red:#5c1a1a;
+  --red-bg:#fdf0f0;
+  --red-border:#e8b8b8;
+  --mono:'IBM Plex Mono',ui-monospace,monospace;
+  --sans:'IBM Plex Sans',system-ui,sans-serif;
+  --radius:4px;
+  --radius-lg:8px;
+}
+html{scroll-behavior:smooth}
+body{font-family:var(--sans);background:var(--bg);color:var(--text);min-height:100vh;-webkit-font-smoothing:antialiased}
+
+/* PAGE */
+.page{max-width:760px;margin:0 auto;padding:56px 40px 100px}
+
+/* HEADER */
+.header{border-bottom:2px solid var(--text);padding-bottom:28px;margin-bottom:36px}
+.header-meta{display:flex;gap:24px;flex-wrap:wrap;margin-bottom:16px}
+.meta-item{display:flex;flex-direction:column;gap:3px}
+.meta-label{font-family:var(--mono);font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--subtle)}
+.meta-value{font-family:var(--mono);font-size:12px;color:var(--text);font-weight:500}
+.status-badge{display:inline-flex;align-items:center;gap:6px;padding:3px 10px;border-radius:20px;font-family:var(--mono);font-size:11px;font-weight:600;background:var(--accent-bg);border:1px solid var(--accent-border);color:var(--accent)}
+.status-badge::before{content:'';width:6px;height:6px;border-radius:50%;background:var(--accent)}
+.adr-number{font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--subtle);margin-bottom:8px}
+.adr-title{font-size:28px;font-weight:600;letter-spacing:-.02em;color:var(--text);line-height:1.2;margin-bottom:12px}
+.adr-subtitle{font-size:15px;color:var(--muted);line-height:1.6}
+.back-link{display:inline-flex;align-items:center;gap:6px;font-family:var(--mono);font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);text-decoration:none;margin-bottom:18px;transition:color .15s ease}
+.back-link:hover{color:var(--text)}
+
+/* SECTION */
+.section{margin-bottom:44px}
+.section-title{font-size:11px;font-weight:600;font-family:var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--subtle);border-bottom:1px solid var(--border);padding-bottom:8px;margin-bottom:20px}
+.prose{font-size:14.5px;color:var(--muted);line-height:1.75;margin-bottom:14px}
+.prose strong{color:var(--text);font-weight:600}
+
+/* DECISION CARDS */
+.decisions{display:flex;flex-direction:column;gap:20px}
+.decision{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden}
+.decision-head{display:flex;align-items:flex-start;gap:16px;padding:18px 20px;border-bottom:1px solid var(--border);background:var(--surface2)}
+.decision-num{font-family:var(--mono);font-size:11px;font-weight:600;color:var(--subtle);padding-top:2px;flex-shrink:0;width:20px}
+.decision-title{font-size:15px;font-weight:600;color:var(--text);line-height:1.3}
+.decision-body{padding:16px 20px 18px 56px}
+.decision-chosen{display:inline-flex;align-items:center;gap:7px;padding:4px 12px;border-radius:20px;background:var(--accent-bg);border:1px solid var(--accent-border);font-family:var(--mono);font-size:11px;font-weight:600;color:var(--accent);margin-bottom:12px}
+.decision-chosen::before{content:'✓';font-size:10px}
+.field-row{display:grid;grid-template-columns:100px 1fr;gap:10px;margin-bottom:8px;font-size:13.5px}
+.field-label{color:var(--subtle);font-weight:500;padding-top:1px}
+.field-value{color:var(--muted);line-height:1.6}
+.field-value em{font-style:normal;color:var(--text);font-weight:500}
+.options-list{display:flex;gap:6px;flex-wrap:wrap}
+.option-chip{font-family:var(--mono);font-size:11px;padding:2px 8px;border-radius:3px;background:var(--surface2);border:1px solid var(--border2);color:var(--muted)}
+.option-chip.chosen{background:var(--accent-bg);border-color:var(--accent-border);color:var(--accent)}
+.tradeoff{display:flex;gap:8px;align-items:flex-start;margin-top:10px;padding:10px 12px;background:var(--amber-bg);border:1px solid var(--amber-border);border-radius:var(--radius);font-size:13px;color:var(--amber);line-height:1.55}
+.tradeoff-icon{flex-shrink:0;font-size:13px;margin-top:1px}
+
+/* CONSEQUENCES */
+.consequences-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
+.consequence-block{border-radius:var(--radius-lg);padding:16px 18px}
+.consequence-block.positive{background:var(--accent-bg);border:1px solid var(--accent-border)}
+.consequence-block.negative{background:var(--amber-bg);border:1px solid var(--amber-border)}
+.consequence-label{font-family:var(--mono);font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;font-weight:600;margin-bottom:10px}
+.positive .consequence-label{color:var(--accent)}
+.negative .consequence-label{color:var(--amber)}
+.consequence-list{list-style:none;display:flex;flex-direction:column;gap:8px}
+.consequence-list li{font-size:13.5px;line-height:1.6;display:flex;gap:8px;align-items:flex-start}
+.consequence-list li::before{content:'';width:5px;height:5px;border-radius:50%;margin-top:7px;flex-shrink:0}
+.positive .consequence-list li{color:var(--muted)}
+.positive .consequence-list li::before{background:var(--accent)}
+.negative .consequence-list li{color:var(--amber)}
+.negative .consequence-list li::before{background:var(--amber)}
+
+/* OPEN QUESTIONS */
+.questions{display:flex;flex-direction:column;gap:10px}
+.question{display:flex;gap:12px;align-items:flex-start;padding:12px 14px;background:var(--blue-bg);border:1px solid var(--blue-border);border-radius:var(--radius)}
+.q-icon{font-size:13px;flex-shrink:0;margin-top:1px}
+.q-body{font-size:13.5px;color:var(--blue);line-height:1.6}
+.q-body strong{font-weight:600;display:block;margin-bottom:2px}
+
+/* FOOTER */
+.footer{border-top:1px solid var(--border);padding-top:20px;margin-top:48px;display:flex;justify-content:space-between;align-items:center;flex-wrap:gap}
+.footer-left{font-family:var(--mono);font-size:11px;color:var(--subtle)}
+.footer-right{font-family:var(--mono);font-size:11px;color:var(--subtle)}
+
+/* INLINE CODE */
+.ic{font-family:var(--mono);font-size:12px;background:var(--surface2);border:1px solid var(--border);border-radius:3px;padding:1px 5px;color:var(--text)}
+
+@media(max-width:600px){
+  .page{padding:32px 20px 60px}
+  .consequences-grid{grid-template-columns:1fr}
+  .decision-body{padding-left:20px}
+}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <a href="../index.html" class="back-link">← Back to main</a>
+  <!-- HEADER -->
+  <header class="header">
+    <div class="adr-number">ADR-002 · claims-app · Slice 1</div>
+    <h1 class="adr-title">Core data model: entities and tooling choices</h1>
+    <p class="adr-subtitle">Five decisions made before writing any models — each affecting every slice that follows.</p>
+    <div class="header-meta" style="margin-top:20px">
+      <div class="meta-item">
+        <div class="meta-label">Status</div>
+        <div><span class="status-badge">Accepted</span></div>
+      </div>
+      <div class="meta-item">
+        <div class="meta-label">Date</div>
+        <div class="meta-value">June 2026</div>
+      </div>
+      <div class="meta-item">
+        <div class="meta-label">Slice</div>
+        <div class="meta-value">1 — Data Model</div>
+      </div>
+      <div class="meta-item">
+        <div class="meta-label">Stack</div>
+        <div class="meta-value">Python · SQLAlchemy · Alembic · PostgreSQL</div>
+      </div>
+    </div>
+  </header>
+
+  <!-- CONTEXT -->
+  <section class="section">
+    <div class="section-title">Context</div>
+    <p class="prose">Slice 1 requires a PostgreSQL schema to represent the core insurance domain: customers, policies, and claims. Before writing any models we needed to settle five tooling and design choices that affect every future slice — primary key strategy, ORM selection, migration tooling, status field representation, and entity scope.</p>
+    <p class="prose">These are not independent decisions: the choice of sync SQLAlchemy, for example, is contingent on deferring async concerns to a later slice. Documenting them together makes the dependency visible.</p>
+  </section>
+
+  <!-- DECISIONS -->
+  <section class="section">
+    <div class="section-title">Decisions</div>
+    <div class="decisions">
+
+      <div class="decision">
+        <div class="decision-head">
+          <div class="decision-num">1</div>
+          <div class="decision-title">UUID primary keys (not integer sequences)</div>
+        </div>
+        <div class="decision-body">
+          <div class="decision-chosen">UUID v4 generated in Python</div>
+          <div class="field-row">
+            <div class="field-label">Options</div>
+            <div class="field-value">
+              <div class="options-list">
+                <span class="option-chip chosen">UUID v4 (Python)</span>
+                <span class="option-chip">UUID (Postgres gen_random_uuid)</span>
+                <span class="option-chip">Integer auto-increment</span>
+              </div>
+            </div>
+          </div>
+          <div class="field-row">
+            <div class="field-label">Rationale</div>
+            <div class="field-value">UUIDs are safe to expose in URLs — no sequential enumeration risk. They work across distributed systems without coordination and are the standard in insurance and finance contexts where record IDs may appear in external documents or regulatory filings.</div>
+          </div>
+          <div class="tradeoff">
+            <div class="tradeoff-icon">↕</div>
+            UUID columns are larger (16 bytes vs 4) and slightly slower to index than integers. Acceptable at this scale.
+          </div>
+        </div>
+      </div>
+
+      <div class="decision">
+        <div class="decision-head">
+          <div class="decision-num">2</div>
+          <div class="decision-title">SQLAlchemy ORM, synchronous</div>
+        </div>
+        <div class="decision-body">
+          <div class="decision-chosen">SQLAlchemy 2.0 ORM · DeclarativeBase · Mapped annotations</div>
+          <div class="field-row">
+            <div class="field-label">Options</div>
+            <div class="field-value">
+              <div class="options-list">
+                <span class="option-chip chosen">SQLAlchemy ORM (sync)</span>
+                <span class="option-chip">SQLAlchemy ORM (async)</span>
+                <span class="option-chip">SQLAlchemy Core</span>
+                <span class="option-chip">Raw psycopg2 SQL</span>
+              </div>
+            </div>
+          </div>
+          <div class="field-row">
+            <div class="field-label">Rationale</div>
+            <div class="field-value">The ORM keeps model definitions readable and Pythonic, reducing boilerplate for standard CRUD. Synchronous chosen over async to minimise complexity in Slice 1 — async SQLAlchemy requires a different session lifecycle and is not needed until FastAPI concurrency becomes a bottleneck.</div>
+          </div>
+          <div class="tradeoff">
+            <div class="tradeoff-icon">↕</div>
+            Sync SQLAlchemy will require replacement if FastAPI concurrency becomes a bottleneck under real load. A known rework cost, accepted now in exchange for simplicity.
+          </div>
+        </div>
+      </div>
+
+      <div class="decision">
+        <div class="decision-head">
+          <div class="decision-num">3</div>
+          <div class="decision-title">Alembic for schema migrations</div>
+        </div>
+        <div class="decision-body">
+          <div class="decision-chosen">Alembic with autogenerate</div>
+          <div class="field-row">
+            <div class="field-label">Options</div>
+            <div class="field-value">
+              <div class="options-list">
+                <span class="option-chip chosen">Alembic (autogenerate)</span>
+                <span class="option-chip">Manual SQL scripts</span>
+                <span class="option-chip">Recreate DB on change</span>
+                <span class="option-chip">No migration tooling</span>
+              </div>
+            </div>
+          </div>
+          <div class="field-row">
+            <div class="field-label">Rationale</div>
+            <div class="field-value">Alembic is the standard companion to SQLAlchemy. Autogenerate derives the migration file from the models, reducing human error. A full migration history from day one is non-negotiable for any system that will hold real data — each change is auditable and reversible.</div>
+          </div>
+          <div class="tradeoff">
+            <div class="tradeoff-icon">↕</div>
+            Autogenerated migrations must always be reviewed before running — Alembic can miss certain changes (e.g. column renames) and may generate an empty file if models are not correctly imported in <span class="ic">env.py</span>.
+          </div>
+        </div>
+      </div>
+
+      <div class="decision">
+        <div class="decision-head">
+          <div class="decision-num">4</div>
+          <div class="decision-title">Status fields as plain strings</div>
+        </div>
+        <div class="decision-body">
+          <div class="decision-chosen">String column · validation deferred to API layer</div>
+          <div class="field-row">
+            <div class="field-label">Options</div>
+            <div class="field-value">
+              <div class="options-list">
+                <span class="option-chip chosen">Plain String</span>
+                <span class="option-chip">Postgres native ENUM</span>
+                <span class="option-chip">Python enum.Enum → PG ENUM</span>
+                <span class="option-chip">Integer code</span>
+              </div>
+            </div>
+          </div>
+          <div class="field-row">
+            <div class="field-label">Rationale</div>
+            <div class="field-value">Postgres ENUMs require a migration to add a new value, creating friction as domain logic evolves. Plain strings are easier to extend; validation of allowed values will be enforced at the API layer via Pydantic in a later slice, keeping the database schema flexible.</div>
+          </div>
+          <div class="tradeoff">
+            <div class="tradeoff-icon">↕</div>
+            Invalid status values are not rejected at the database level — a bug in the application layer could write bad data. This is acceptable given Pydantic validation will be added in Slice 2.
+          </div>
+        </div>
+      </div>
+
+      <div class="decision">
+        <div class="decision-head">
+          <div class="decision-num">5</div>
+          <div class="decision-title">Three entities in scope (Customer, Policy, Claim)</div>
+        </div>
+        <div class="decision-body">
+          <div class="decision-chosen">Customer · Policy · Claim</div>
+          <div class="field-row">
+            <div class="field-label">Options</div>
+            <div class="field-value">
+              <div class="options-list">
+                <span class="option-chip chosen">3 entities (this slice)</span>
+                <span class="option-chip">4 entities incl. ClaimDocument</span>
+              </div>
+            </div>
+          </div>
+          <div class="field-row">
+            <div class="field-label">Rationale</div>
+            <div class="field-value"><span class="ic">ClaimDocument</span> was deferred to a later slice. Keeping the initial migration simple ensures Alembic setup can be validated cleanly, and the scope stays focused on the core relational model without introducing file-handling concerns.</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- CONSEQUENCES -->
+  <section class="section">
+    <div class="section-title">Consequences</div>
+    <div class="consequences-grid">
+      <div class="consequence-block positive">
+        <div class="consequence-label">Positive</div>
+        <ul class="consequence-list">
+          <li>Sync SQLAlchemy and plain-string status fields deliberately defer complexity, keeping Slice 1 lean and unblocking progress toward the AI subsystem — the primary focus of this project.</li>
+          <li>Alembic gives the schema a full migration history from day one, making future changes auditable and reversible rather than manual and risky.</li>
+        </ul>
+      </div>
+      <div class="consequence-block negative">
+        <div class="consequence-label">Negative / trade-offs</div>
+        <ul class="consequence-list">
+          <li>Sync SQLAlchemy will require replacement if FastAPI concurrency becomes a bottleneck under real load — a known rework cost accepted now for simplicity.</li>
+          <li>ClaimDocument deferred to a later slice; any features depending on document storage cannot be built until that entity is added.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- OPEN QUESTIONS -->
+  <section class="section">
+    <div class="section-title">Open questions</div>
+    <div class="questions">
+      <div class="question">
+        <div class="q-icon">?</div>
+        <div class="q-body">
+          <strong>When does sync SQLAlchemy become a problem?</strong>
+          To be revisited when the API layer is under load testing in a later slice.
+        </div>
+      </div>
+      <div class="question">
+        <div class="q-icon">?</div>
+        <div class="q-body">
+          <strong>Should status values be validated at the model layer or only at the API layer?</strong>
+          Currently deferred to the API layer (Pydantic). To be decided in Slice 2 when the first endpoints are built.
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <div class="footer-left">claims-app · ADR-002 · Slice 1</div>
+    <div class="footer-right">Status: Accepted · June 2026</div>
+  </footer>
+
+</div>
+</body>
+</html>
