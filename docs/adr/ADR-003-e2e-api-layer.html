@@ -1,0 +1,326 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ADR-003 · claims-app · API layer: schemas, session management, and routing</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#f7f7f5;--surface:#ffffff;--surface2:#f2f2ef;
+  --border:#e4e4e0;--border2:#d4d4cf;
+  --text:#1a1a18;--muted:#5a5a55;--subtle:#9a9a94;
+  --accent:#1a4a2e;--accent-bg:#edf4f0;--accent-border:#b8d9c5;
+  --blue:#1a3a5c;--blue-bg:#edf2f8;--blue-border:#b8cfe0;
+  --amber:#5c3a00;--amber-bg:#fdf5e6;--amber-border:#e8c87a;
+  --red:#5c1a1a;--red-bg:#fdf0f0;--red-border:#e8b8b8;
+  --mono:'IBM Plex Mono',ui-monospace,monospace;
+  --sans:'IBM Plex Sans',system-ui,sans-serif;
+  --radius:4px;--radius-lg:8px;
+}
+html{scroll-behavior:smooth}
+body{font-family:var(--sans);background:var(--bg);color:var(--text);min-height:100vh;-webkit-font-smoothing:antialiased}
+.page{max-width:760px;margin:0 auto;padding:56px 40px 100px}
+.header{border-bottom:2px solid var(--text);padding-bottom:28px;margin-bottom:36px}
+.header-meta{display:flex;gap:24px;flex-wrap:wrap;margin-bottom:16px}
+.meta-item{display:flex;flex-direction:column;gap:3px}
+.meta-label{font-family:var(--mono);font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--subtle)}
+.meta-value{font-family:var(--mono);font-size:12px;color:var(--text);font-weight:500}
+.status-badge{display:inline-flex;align-items:center;gap:6px;padding:3px 10px;border-radius:20px;font-family:var(--mono);font-size:11px;font-weight:600;background:var(--accent-bg);border:1px solid var(--accent-border);color:var(--accent)}
+.status-badge::before{content:'';width:6px;height:6px;border-radius:50%;background:var(--accent)}
+.adr-number{font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--subtle);margin-bottom:8px}
+.adr-title{font-size:28px;font-weight:600;letter-spacing:-.02em;color:var(--text);line-height:1.2;margin-bottom:12px}
+.adr-subtitle{font-size:15px;color:var(--muted);line-height:1.6}
+.section{margin-bottom:44px}
+.section-title{font-size:11px;font-weight:600;font-family:var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--subtle);border-bottom:1px solid var(--border);padding-bottom:8px;margin-bottom:20px}
+.prose{font-size:14.5px;color:var(--muted);line-height:1.75;margin-bottom:14px}
+.prose strong{color:var(--text);font-weight:600}
+.decisions{display:flex;flex-direction:column;gap:20px}
+.decision{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden}
+.decision-head{display:flex;align-items:flex-start;gap:16px;padding:18px 20px;border-bottom:1px solid var(--border);background:var(--surface2)}
+.decision-num{font-family:var(--mono);font-size:11px;font-weight:600;color:var(--subtle);padding-top:2px;flex-shrink:0;width:20px}
+.decision-title{font-size:15px;font-weight:600;color:var(--text);line-height:1.3}
+.decision-body{padding:16px 20px 18px 56px}
+.decision-chosen{display:inline-flex;align-items:center;gap:7px;padding:4px 12px;border-radius:20px;background:var(--accent-bg);border:1px solid var(--accent-border);font-family:var(--mono);font-size:11px;font-weight:600;color:var(--accent);margin-bottom:12px}
+.decision-chosen::before{content:'✓';font-size:10px}
+.field-row{display:grid;grid-template-columns:100px 1fr;gap:10px;margin-bottom:8px;font-size:13.5px}
+.field-label{color:var(--subtle);font-weight:500;padding-top:1px}
+.field-value{color:var(--muted);line-height:1.6}
+.field-value em{font-style:normal;color:var(--text);font-weight:500}
+.options-list{display:flex;gap:6px;flex-wrap:wrap}
+.option-chip{font-family:var(--mono);font-size:11px;padding:2px 8px;border-radius:3px;background:var(--surface2);border:1px solid var(--border2);color:var(--muted)}
+.option-chip.chosen{background:var(--accent-bg);border-color:var(--accent-border);color:var(--accent)}
+.tradeoff{display:flex;gap:8px;align-items:flex-start;margin-top:10px;padding:10px 12px;background:var(--amber-bg);border:1px solid var(--amber-border);border-radius:var(--radius);font-size:13px;color:var(--amber);line-height:1.55}
+.tradeoff-icon{flex-shrink:0;font-size:13px;margin-top:1px}
+.consequences-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
+.consequence-block{border-radius:var(--radius-lg);padding:16px 18px}
+.consequence-block.positive{background:var(--accent-bg);border:1px solid var(--accent-border)}
+.consequence-block.negative{background:var(--amber-bg);border:1px solid var(--amber-border)}
+.consequence-label{font-family:var(--mono);font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;font-weight:600;margin-bottom:10px}
+.positive .consequence-label{color:var(--accent)}
+.negative .consequence-label{color:var(--amber)}
+.consequence-list{list-style:none;display:flex;flex-direction:column;gap:8px}
+.consequence-list li{font-size:13.5px;line-height:1.6;display:flex;gap:8px;align-items:flex-start}
+.consequence-list li::before{content:'';width:5px;height:5px;border-radius:50%;margin-top:7px;flex-shrink:0}
+.positive .consequence-list li{color:var(--muted)}
+.positive .consequence-list li::before{background:var(--accent)}
+.negative .consequence-list li{color:var(--amber)}
+.negative .consequence-list li::before{background:var(--amber)}
+.questions{display:flex;flex-direction:column;gap:10px}
+.question{display:flex;gap:12px;align-items:flex-start;padding:12px 14px;background:var(--blue-bg);border:1px solid var(--blue-border);border-radius:var(--radius)}
+.q-icon{font-size:13px;flex-shrink:0;margin-top:1px}
+.q-body{font-size:13.5px;color:var(--blue);line-height:1.6}
+.q-body strong{font-weight:600;display:block;margin-bottom:2px}
+.footer{border-top:1px solid var(--border);padding-top:20px;margin-top:48px;display:flex;justify-content:space-between;align-items:center}
+.footer-left{font-family:var(--mono);font-size:11px;color:var(--subtle)}
+.footer-right{font-family:var(--mono);font-size:11px;color:var(--subtle)}
+.ic{font-family:var(--mono);font-size:12px;background:var(--surface2);border:1px solid var(--border);border-radius:3px;padding:1px 5px;color:var(--text)}
+@media(max-width:600px){
+  .page{padding:32px 20px 60px}
+  .consequences-grid{grid-template-columns:1fr}
+  .decision-body{padding-left:20px}
+}
+</style>
+</head>
+<body>
+<div class="page">
+  <a href="../index.html" style="display:inline-flex;align-items:center;gap:8px;font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);text-decoration:none;margin-bottom:20px;">← Back to main</a>
+
+  <header class="header">
+    <div class="adr-number">ADR-003 · claims-app · Slice 2</div>
+    <h1 class="adr-title">API layer: schemas, session management, and routing</h1>
+    <p class="adr-subtitle">Decisions made while wiring FastAPI to Postgres for the first end-to-end Claims flow — request validation, database session lifecycle, route organisation, reference number generation, and model metadata registration.</p>
+    <div class="header-meta" style="margin-top:20px">
+      <div class="meta-item">
+        <div class="meta-label">Status</div>
+        <div><span class="status-badge">Accepted</span></div>
+      </div>
+      <div class="meta-item">
+        <div class="meta-label">Date</div>
+        <div class="meta-value">July 2026</div>
+      </div>
+      <div class="meta-item">
+        <div class="meta-label">Slice</div>
+        <div class="meta-value">2 — First End-to-End Flow</div>
+      </div>
+      <div class="meta-item">
+        <div class="meta-label">Stack</div>
+        <div class="meta-value">FastAPI · SQLAlchemy · Pydantic · Postgres</div>
+      </div>
+    </div>
+  </header>
+
+  <section class="section">
+    <div class="section-title">Context</div>
+    <p class="prose">Slice 1 established the data model — <span class="ic">Customer</span>, <span class="ic">Policy</span>, and <span class="ic">Claim</span> as SQLAlchemy models, migrated to Postgres. Nothing in the app could yet be called over HTTP. Slice 2's goal was the first real request/response cycle: create and read a claim through FastAPI endpoints backed by Postgres, no auth.</p>
+    <p class="prose">Five design decisions arose in the course of building this: how to separate the API's request/response contract from the database schema, how to manage the database session lifecycle per request, how to organise route handlers, how to generate a claim reference number given the model has no database-level default for it, and how to ensure SQLAlchemy correctly resolves foreign keys across model files.</p>
+  </section>
+
+  <section class="section">
+    <div class="section-title">Decisions</div>
+    <div class="decisions">
+
+      <div class="decision">
+        <div class="decision-head">
+          <div class="decision-num">1</div>
+          <div class="decision-title">Separate Pydantic schemas from SQLAlchemy models</div>
+        </div>
+        <div class="decision-body">
+          <div class="decision-chosen">Dedicated app/schemas.py, ClaimCreate / ClaimRead split</div>
+          <div class="field-row">
+            <div class="field-label">Options</div>
+            <div class="field-value">
+              <div class="options-list">
+                <span class="option-chip chosen">Separate schemas</span>
+                <span class="option-chip">Reuse SQLAlchemy models directly</span>
+                <span class="option-chip">SQLModel merged class</span>
+              </div>
+            </div>
+          </div>
+          <div class="field-row">
+            <div class="field-label">Rationale</div>
+            <div class="field-value">SQLAlchemy models carry DB internals (session state, relationships) that Pydantic/FastAPI cannot serialise cleanly. The Create/Read split lets the API hide server-generated fields (<span class="ic">id</span>, <span class="ic">filed_at</span>, <span class="ic">updated_at</span>) from the request contract while exposing them in responses. This is the FastAPI-idiomatic pattern for a plain-SQLAlchemy stack and avoids coupling the API shape to the DB schema.</div>
+          </div>
+          <div class="tradeoff">
+            <div class="tradeoff-icon">↕</div>
+            Two parallel class hierarchies to maintain — a new field or a modification to an existing one must be applied in both the SQLAlchemy model and the relevant Pydantic schema(s). Accepted as the cost of keeping the API contract independent of the database schema.
+          </div>
+        </div>
+      </div>
+
+      <div class="decision">
+        <div class="decision-head">
+          <div class="decision-num">2</div>
+          <div class="decision-title">Session-per-request via Depends(get_db)</div>
+        </div>
+        <div class="decision-body">
+          <div class="decision-chosen">Generator dependency, injected per route</div>
+          <div class="field-row">
+            <div class="field-label">Options</div>
+            <div class="field-value">
+              <div class="options-list">
+                <span class="option-chip chosen">Dependency injection (yield)</span>
+                <span class="option-chip">Global session</span>
+                <span class="option-chip">Context manager per route</span>
+              </div>
+            </div>
+          </div>
+          <div class="field-row">
+            <div class="field-label">Rationale</div>
+            <div class="field-value">The generator pattern (<span class="ic">try / yield / finally</span>) guarantees the session is closed after every request — including on exceptions — without duplicating teardown logic in every route. Dependency injection keeps routes testable: tests can override <span class="ic">get_db</span> to inject a test session pointed at a different database, without changing the routes or the request/response schemas at all.</div>
+          </div>
+          <div class="tradeoff">
+            <div class="tradeoff-icon">↕</div>
+            One session per request means one DB connection per request. Fine at this scale; SQLAlchemy's built-in connection pooling handles concurrency adequately.
+          </div>
+        </div>
+      </div>
+
+      <div class="decision">
+        <div class="decision-head">
+          <div class="decision-num">3</div>
+          <div class="decision-title">Routes in a dedicated router module</div>
+        </div>
+        <div class="decision-body">
+          <div class="decision-chosen">app/routers/claims.py via APIRouter, registered in main.py</div>
+          <div class="field-row">
+            <div class="field-label">Options</div>
+            <div class="field-value">
+              <div class="options-list">
+                <span class="option-chip chosen">Per-entity router modules</span>
+                <span class="option-chip">All routes in main.py</span>
+                <span class="option-chip">One flat routes.py</span>
+              </div>
+            </div>
+          </div>
+          <div class="field-row">
+            <div class="field-label">Rationale</div>
+            <div class="field-value">Keeping <span class="ic">main.py</span> thin (app setup and router registration only) is a FastAPI best practice and a Twelve-Factor principle. Per-entity routers make it easy to add auth middleware, versioning, or tags per resource group later without touching unrelated routes.</div>
+          </div>
+          <div class="tradeoff">
+            <div class="tradeoff-icon">↕</div>
+            More files to navigate early on, for one entity. Pays off from Slice 4 onward when auth middleware is added per-router rather than globally.
+          </div>
+        </div>
+      </div>
+
+      <div class="decision">
+        <div class="decision-head">
+          <div class="decision-num">4</div>
+          <div class="decision-title">Reference number generation — temporary placeholder</div>
+        </div>
+        <div class="decision-body">
+          <div class="decision-chosen">str(uuid.uuid4()) generated in the route handler</div>
+          <div class="field-row">
+            <div class="field-label">Options</div>
+            <div class="field-value">
+              <div class="options-list">
+                <span class="option-chip chosen">App-side UUID string (temporary)</span>
+                <span class="option-chip">Database sequence</span>
+                <span class="option-chip">Human-readable claim number scheme</span>
+              </div>
+            </div>
+          </div>
+          <div class="field-row">
+            <div class="field-label">Rationale</div>
+            <div class="field-value"><span class="ic">Claim.reference_number</span> is <span class="ic">unique=True, nullable=False</span> with no database-level default — Postgres cannot generate it on its own. Rather than alter the Slice 1 model mid-slice, the route handler generates a UUID string as a stand-in value before constructing the <span class="ic">Claim</span> instance. This unblocks the end-to-end flow without reopening the data model.</div>
+          </div>
+          <div class="tradeoff">
+            <div class="tradeoff-icon">↕</div>
+            Not a real business-facing claim number — just a placeholder that satisfies the not-null/unique constraint. A proper human-readable scheme (e.g. sequential per-year numbering) is deferred; see Open Questions.
+          </div>
+        </div>
+      </div>
+
+      <div class="decision">
+        <div class="decision-head">
+          <div class="decision-num">5</div>
+          <div class="decision-title">Explicit model registration for foreign key resolution</div>
+        </div>
+        <div class="decision-body">
+          <div class="decision-chosen">app/models/__init__.py imports every model</div>
+          <div class="field-row">
+            <div class="field-label">Options</div>
+            <div class="field-value">
+              <div class="options-list">
+                <span class="option-chip chosen">Central __init__.py import</span>
+                <span class="option-chip">Rely on incidental imports</span>
+              </div>
+            </div>
+          </div>
+          <div class="field-row">
+            <div class="field-label">Rationale</div>
+            <div class="field-value">Discovered during implementation that SQLAlchemy's foreign key resolution depends on all related models being imported somewhere in the app's startup path — this shaped the addition of <span class="ic">app/models/__init__.py</span> as an explicit registration point, rather than relying on incidental imports from whichever router happens to be loaded. Without it, <span class="ic">Claim</span>'s foreign key to <span class="ic">policies</span> failed to resolve at commit time, because nothing in the request path imported <span class="ic">Policy</span> directly.</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="section-title">Consequences</div>
+    <div class="consequences-grid">
+
+      <div class="consequence-block positive">
+        <div class="consequence-label">Positive</div>
+        <ul class="consequence-list">
+          <li>Slice 3 testing becomes straightforward: tests send the same <span class="ic">ClaimCreate</span>/<span class="ic">ClaimRead</span> JSON shapes, but <span class="ic">get_db</span> is overridden to point at a separate test database — the schemas and routes stay untouched.</li>
+          <li>Slice 4 auth can add a <span class="ic">get_current_user</span> dependency without ever needing to change <span class="ic">ClaimCreate</span> — auth-related fields (e.g. a future <span class="ic">created_by_user_id</span>) stay off the API contract unless deliberately exposed.</li>
+          <li>Future API versioning (e.g. a <span class="ic">ClaimReadV2</span>) is possible without touching the <span class="ic">Claim</span> table or model at all.</li>
+          <li>The central model registration point (<span class="ic">app/models/__init__.py</span>) makes foreign key resolution explicit and predictable rather than dependent on which router happens to be imported first.</li>
+        </ul>
+      </div>
+
+      <div class="consequence-block negative">
+        <div class="consequence-label">Negative / trade-offs</div>
+        <ul class="consequence-list">
+          <li>Any new field or modification to <span class="ic">Claim</span> must be applied in two places — the SQLAlchemy model and the relevant Pydantic schema(s) — with no automatic sync between them.</li>
+          <li>Implementation surfaced a real architecture-shaping surprise: a FastAPI/SQLModel tutorial pattern was initially followed by mistake, producing code (<span class="ic">session.add()</span> on a Pydantic object) that doesn't apply to this project's split-model stack. Cost real iteration time; documented as a field note to avoid repeating.</li>
+          <li>The reference number placeholder is not production-appropriate and will need revisiting before this feature is client-facing.</li>
+        </ul>
+      </div>
+
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="section-title">Open questions</div>
+    <div class="questions">
+
+      <div class="question">
+        <div class="q-icon">?</div>
+        <div class="q-body">
+          <strong>What is the real reference number generation strategy?</strong>
+          Currently a random UUID string, not a business-readable claim number. Needs a proper scheme (e.g. sequential, per-year, or prefixed by claim type) — deferred to a future slice once real requirements are clearer.
+        </div>
+      </div>
+
+      <div class="question">
+        <div class="q-icon">?</div>
+        <div class="q-body">
+          <strong>Should status be a constrained enum rather than a free String?</strong>
+          <span class="ic">Claim.status</span> is currently an unconstrained <span class="ic">String</span> column. A proper enum (Postgres native type or Pydantic <span class="ic">Literal</span>) would prevent invalid status values, but requires a migration — out of scope for this slice.
+        </div>
+      </div>
+
+      <div class="question">
+        <div class="q-icon">?</div>
+        <div class="q-body">
+          <strong>Should Customer and Policy get their own CRUD APIs?</strong>
+          Both are currently seeded directly via <span class="ic">psql</span> for testing. Whether they need full API-driven management, or remain reference data managed some other way, is undecided.
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <footer class="footer">
+    <div class="footer-left">claims-app · ADR-003 · Slice 2</div>
+    <div class="footer-right">Status: Accepted · July 2026</div>
+  </footer>
+
+</div>
+</body>
+</html>

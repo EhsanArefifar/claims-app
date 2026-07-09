@@ -1,0 +1,1349 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>claims-app · Phase A · Slice 2 — First End-to-End Flow</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --font-sans: 'Inter', system-ui, sans-serif;
+      --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+
+      --bg:          #0d0d0f;
+      --nav:         #111114;
+      --surface:     #18181c;
+      --surface-2:   #1f1f24;
+      --pane:        #f8f8f7;
+      --pane-surface:#ffffff;
+
+      --text:        #f0f0ee;
+      --text-muted:  #a0a09a;
+      --text-subtle: #5a5a58;
+
+      --border:      #2a2a30;
+      --nav-border:  #1e1e24;
+
+      --nav-text:        #7a7a78;
+      --nav-text-hover:  #c0c0bc;
+      --nav-text-active: #f0f0ee;
+
+      --accent:      #4a9eff;
+      --accent-soft: rgba(74,158,255,0.10);
+      --accent-glow: rgba(74,158,255,0.20);
+
+      --green:       #4ade80;
+      --green-bg:    rgba(74,222,128,0.08);
+      --green-border:rgba(74,222,128,0.20);
+
+      --amber:       #fbbf24;
+      --amber-bg:    rgba(251,191,36,0.08);
+      --amber-border:rgba(251,191,36,0.20);
+
+      --purple:      #c084fc;
+      --purple-bg:   rgba(192,132,252,0.08);
+      --purple-border:rgba(192,132,252,0.20);
+
+      --radius-sm: 4px;
+      --radius-md: 8px;
+      --radius-lg: 12px;
+    }
+
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: var(--font-sans);
+      background: var(--bg);
+      color: var(--text);
+      display: flex;
+      height: 100vh;
+      overflow: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── SIDEBAR ── */
+    .sidebar {
+      width: 240px;
+      flex-shrink: 0;
+      background: var(--nav);
+      border-right: 1px solid var(--nav-border);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    .sidebar-head {
+      padding: 20px 16px 16px;
+      border-bottom: 1px solid var(--nav-border);
+    }
+    .sidebar-slice {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 4px;
+    }
+    .sidebar-title {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text);
+    }
+    .sidebar-nav {
+      flex: 1;
+      overflow-y: auto;
+      padding: 12px 8px 20px;
+      scrollbar-width: thin;
+      scrollbar-color: var(--border) transparent;
+    }
+    .sidebar-nav::-webkit-scrollbar { width: 4px; }
+    .sidebar-nav::-webkit-scrollbar-track { background: transparent; }
+    .sidebar-nav::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+    .nav-group-label {
+      font-family: var(--font-mono);
+      font-size: 9px;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+      color: var(--text-subtle);
+      padding: 12px 8px 4px;
+    }
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 8px;
+      border-radius: var(--radius-sm);
+      font-size: 13px;
+      color: var(--nav-text);
+      cursor: pointer;
+      transition: background 120ms, color 120ms;
+      position: relative;
+      border: none;
+      background: none;
+      width: 100%;
+      text-align: left;
+    }
+    .nav-item:hover { background: var(--surface); color: var(--nav-text-hover); }
+    .nav-item.active { color: var(--nav-text-active); background: var(--surface); }
+    .nav-item.active::before {
+      content: '';
+      position: absolute;
+      left: 0; top: 4px; bottom: 4px;
+      width: 2px;
+      background: var(--accent);
+      border-radius: 1px;
+    }
+
+    /* ── CONTENT ── */
+    .content {
+      flex: 1;
+      background: var(--pane);
+      overflow-y: auto;
+      scrollbar-width: thin;
+      scrollbar-color: #d0d0cc transparent;
+    }
+    .content::-webkit-scrollbar { width: 6px; }
+    .content::-webkit-scrollbar-track { background: transparent; }
+    .content::-webkit-scrollbar-thumb { background: #d0d0cc; border-radius: 3px; }
+
+    .pane-header {
+      position: sticky;
+      top: 0;
+      background: var(--pane-surface);
+      border-bottom: 1px solid #e8e8e4;
+      padding: 18px 40px 16px;
+      z-index: 10;
+    }
+    .pane-eyebrow {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: #4a9eff;
+      margin-bottom: 4px;
+    }
+    .pane-title {
+      font-size: 22px;
+      font-weight: 700;
+      color: #0d0d0f;
+      letter-spacing: -.02em;
+    }
+    .pane-subtitle {
+      font-size: 13.5px;
+      color: #6a6a68;
+      margin-top: 3px;
+      line-height: 1.5;
+    }
+
+    .done-bar {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 10px;
+    }
+    .done-chip {
+      font-family: var(--font-mono);
+      font-size: 10.5px;
+      padding: 3px 10px;
+      border-radius: 20px;
+      background: #edf7f0;
+      border: 1px solid #b8ddc5;
+      color: #1a4a2e;
+    }
+
+    .pane-body {
+      padding: 32px 40px 80px;
+      max-width: 860px;
+    }
+
+    /* ── SECTIONS ── */
+    .section { margin-bottom: 48px; }
+    .section-label {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+      color: #9a9a98;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+    .section-label::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: #e4e4e0;
+    }
+    .section-title {
+      font-size: 17px;
+      font-weight: 600;
+      color: #0d0d0f;
+      letter-spacing: -.01em;
+      margin-bottom: 12px;
+    }
+
+    .prose {
+      font-size: 14px;
+      color: #3a3a38;
+      line-height: 1.75;
+      margin-bottom: 14px;
+    }
+    .prose strong { color: #0d0d0f; font-weight: 600; }
+    .prose code {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      background: #f0f0ee;
+      border: 1px solid #e0e0dc;
+      border-radius: 3px;
+      padding: 1px 5px;
+      color: #1a1a18;
+    }
+
+    /* ── CODE BLOCKS ── */
+    .code-block {
+      background: #1a1a1e;
+      border: 1px solid #2a2a32;
+      border-radius: var(--radius-md);
+      padding: 16px 18px;
+      margin: 12px 0 16px;
+      overflow-x: auto;
+    }
+    .code-block pre {
+      font-family: var(--font-mono);
+      font-size: 12.5px;
+      color: #c8c8c4;
+      line-height: 1.65;
+      white-space: pre;
+    }
+    .code-lang {
+      font-family: var(--font-mono);
+      font-size: 9.5px;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      color: #5a5a58;
+      margin-bottom: 8px;
+    }
+
+    /* ── CALLOUTS ── */
+    .callout {
+      border-radius: var(--radius-md);
+      padding: 12px 16px;
+      font-size: 13.5px;
+      line-height: 1.6;
+      margin: 14px 0;
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+    }
+    .callout-icon { flex-shrink: 0; font-size: 14px; margin-top: 1px; }
+    .callout-accent { background: var(--accent-soft); border: 1px solid var(--accent-glow); color: #2a5a8a; }
+    .callout-green  { background: var(--green-bg);  border: 1px solid var(--green-border);  color: #1a4a2e; }
+    .callout-amber  { background: var(--amber-bg);  border: 1px solid var(--amber-border);  color: #5c3a00; }
+    .callout-purple { background: var(--purple-bg); border: 1px solid var(--purple-border); color: #5a2a7a; }
+
+    /* ── CONCEPT DIAGRAM ── */
+    .flow-diagram {
+      background: var(--pane-surface);
+      border: 1px solid #e4e4e0;
+      border-radius: var(--radius-lg);
+      padding: 20px 24px;
+      margin: 16px 0;
+    }
+    .flow-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 6px;
+    }
+    .flow-row:last-child { margin-bottom: 0; }
+    .flow-box {
+      font-family: var(--font-mono);
+      font-size: 11.5px;
+      padding: 6px 12px;
+      border-radius: var(--radius-sm);
+      white-space: nowrap;
+    }
+    .flow-box.blue   { background: #edf2fb; border: 1px solid #b8cfe0; color: #1a3a5c; }
+    .flow-box.green  { background: #edf7f0; border: 1px solid #b8ddc5; color: #1a4a2e; }
+    .flow-box.amber  { background: #fdf5e6; border: 1px solid #e8c87a; color: #5c3a00; }
+    .flow-box.gray   { background: #f4f4f2; border: 1px solid #dcdcd8; color: #3a3a38; }
+    .flow-arrow { color: #9a9a98; font-size: 14px; }
+    .flow-note { font-size: 11.5px; color: #7a7a78; margin-left: 4px; }
+
+    /* ── STEP LIST ── */
+    .step-list { display: flex; flex-direction: column; gap: 20px; }
+    .step {
+      background: var(--pane-surface);
+      border: 1px solid #e4e4e0;
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+    }
+    .step-head {
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+      padding: 14px 16px;
+      background: #f6f6f4;
+      border-bottom: 1px solid #e4e4e0;
+    }
+    .step-num {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 600;
+      color: #4a9eff;
+      padding-top: 2px;
+      flex-shrink: 0;
+      width: 22px;
+    }
+    .step-title {
+      font-size: 14.5px;
+      font-weight: 600;
+      color: #0d0d0f;
+      line-height: 1.3;
+    }
+    .step-body { padding: 14px 16px 16px 52px; }
+    .step-body .prose:last-child { margin-bottom: 0; }
+
+    /* ── CHECKLIST ── */
+    .checklist { display: flex; flex-direction: column; gap: 8px; margin: 12px 0; }
+    .check-item { display: flex; gap: 10px; align-items: flex-start; }
+    .check-box {
+      width: 17px; height: 17px;
+      border-radius: 4px;
+      border: 1.5px solid #c0c0bc;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+    .check-box.done { background: #1a4a2e; border-color: #1a4a2e; }
+    .check-text { font-size: 13.5px; color: #3a3a38; line-height: 1.5; }
+    .check-text code {
+      font-family: var(--font-mono);
+      font-size: 11.5px;
+      background: #f0f0ee;
+      border: 1px solid #dcdcd8;
+      border-radius: 3px;
+      padding: 1px 5px;
+      color: #1a1a18;
+    }
+
+    /* ── ERROR TABLE ── */
+    .error-table { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 12px; }
+    .error-table th {
+      font-family: var(--font-mono);
+      font-size: 9.5px;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      color: #7a7a78;
+      text-align: left;
+      padding: 8px 12px;
+      border-bottom: 1px solid #e4e4e0;
+    }
+    .error-table td {
+      padding: 10px 12px;
+      border-bottom: 1px solid #ececea;
+      color: #3a3a38;
+      vertical-align: top;
+      line-height: 1.55;
+    }
+    .error-table tr:last-child td { border-bottom: none; }
+    .error-table td:first-child {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: #c0392b;
+      width: 34%;
+    }
+
+    /* ── ADR HINT ── */
+    .adr-prompt {
+      background: var(--purple-bg);
+      border: 1px solid var(--purple-border);
+      border-radius: var(--radius-md);
+      padding: 14px 16px;
+      margin-top: 12px;
+    }
+    .adr-prompt-label {
+      font-family: var(--font-mono);
+      font-size: 9.5px;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: var(--purple);
+      margin-bottom: 8px;
+    }
+    .adr-prompt ul {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .adr-prompt li {
+      font-size: 13px;
+      color: #5a2a7a;
+      line-height: 1.5;
+      display: flex;
+      gap: 8px;
+    }
+    .adr-prompt li::before {
+      content: '→';
+      flex-shrink: 0;
+      color: var(--purple);
+      font-family: var(--font-mono);
+    }
+
+    @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+  </style>
+</head>
+<body>
+<a href="index.html" style="position:fixed;top:16px;right:16px;z-index:20;display:inline-flex;align-items:center;gap:8px;font-family:var(--font-mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);text-decoration:none;background:rgba(255,255,255,0.95);padding:8px 10px;border:1px solid #dfe8f2;border-radius:999px;box-shadow:0 4px 12px rgba(0,0,0,0.06);">← Back to main</a>
+
+<!-- SIDEBAR -->
+<nav class="sidebar">
+  <div class="sidebar-head">
+    <a href="index.html" class="back-link" style="display:inline-block;margin-bottom:10px;color:var(--accent);font-family:var(--font-mono);font-size:11px;text-decoration:none;">← Back to main</a>
+    <div class="sidebar-slice">Slice 2</div>
+    <div class="sidebar-title">First End-to-End</div>
+  </div>
+  <div class="sidebar-nav">
+    <div class="nav-group-label">Concepts</div>
+    <button class="nav-item active" onclick="show('overview')">Big picture</button>
+    <button class="nav-item" onclick="show('two-models')">Two sets of models</button>
+    <button class="nav-item" onclick="show('depends')">Dependencies &amp; Depends()</button>
+    <button class="nav-item" onclick="show('lifecycle')">Request lifecycle</button>
+
+    <div class="nav-group-label">Tasks</div>
+    <button class="nav-item" onclick="show('prereq')">Before you start</button>
+    <button class="nav-item" onclick="show('step1')">1 · Pydantic schemas</button>
+    <button class="nav-item" onclick="show('step2')">2 · Session dependency</button>
+    <button class="nav-item" onclick="show('step3')">3 · Claims router</button>
+    <button class="nav-item" onclick="show('step4')">4 · Register router</button>
+    <button class="nav-item" onclick="show('step5')">5 · Smoke test</button>
+    <button class="nav-item" onclick="show('step6')">6 · Commit</button>
+    <button class="nav-item" onclick="show('step7')">7 · ADR-003</button>
+    <button class="nav-item" onclick="show('done')">Done ✓</button>
+
+    <div class="nav-group-label">Field notes</div>
+    <button class="nav-item" onclick="show('fn-sqlmodel')">SQLModel vs SQLAlchemy+Pydantic</button>
+    <button class="nav-item" onclick="show('fn-bridge')">The bridge line</button>
+    <button class="nav-item" onclick="show('fn-session-type')">Session vs SessionLocal</button>
+    <button class="nav-item" onclick="show('fn-execute')">execute() result handling</button>
+    <button class="nav-item" onclick="show('fn-metadata')">Model registration &amp; metadata</button>
+    <button class="nav-item" onclick="show('fn-defaults')">Python-side vs DB-side defaults</button>
+    <button class="nav-item" onclick="show('fn-codespaces')">Codespaces port visibility</button>
+  </div>
+</nav>
+
+<!-- CONTENT -->
+<div class="content">
+  <div class="pane-header">
+    <div class="pane-eyebrow">claims-app · Phase A</div>
+    <div class="pane-title">Slice 2 — First End-to-End Flow</div>
+    <div class="pane-subtitle">Wire FastAPI to Postgres. Create and read claims through real HTTP endpoints. No auth yet — just the app coming alive.</div>
+    <div class="done-bar">
+      <span class="done-chip">POST /claims → 201</span>
+      <span class="done-chip">GET /claims → list</span>
+      <span class="done-chip">GET /claims/{id} → 200 or 404</span>
+      <span class="done-chip">Row in psql</span>
+      <span class="done-chip">ADR-003 committed</span>
+    </div>
+  </div>
+
+  <div class="pane-body">
+
+    <!-- ── OVERVIEW ── -->
+    <section class="section" id="overview">
+      <div class="section-label">Concept</div>
+      <div class="section-title">Big picture — what is Slice 2 doing?</div>
+      <p class="prose">Slice 1 built the schema. Nothing actually runs yet — you can't talk to the app and store a claim. Slice 2 changes that. By the end, the app has a real request/response cycle: HTTP request in, SQL write to Postgres, JSON response out.</p>
+      <p class="prose">Three new pieces are needed: <strong>Pydantic schemas</strong> to define what the API accepts and returns, a <strong>database session dependency</strong> to hand each route a DB connection, and <strong>route handlers</strong> that do the actual work.</p>
+
+      <div class="flow-diagram">
+        <div class="flow-row">
+          <div class="flow-box blue">HTTP Request</div>
+          <div class="flow-arrow">→</div>
+          <div class="flow-box amber">Pydantic schema validates input</div>
+          <div class="flow-note">ClaimCreate</div>
+        </div>
+        <div class="flow-row">
+          <div class="flow-arrow" style="margin-left:120px">↓</div>
+        </div>
+        <div class="flow-row">
+          <div class="flow-box gray" style="margin-left:130px">Route handler (get_db injected)</div>
+        </div>
+        <div class="flow-row">
+          <div class="flow-arrow" style="margin-left:120px">↓</div>
+        </div>
+        <div class="flow-row">
+          <div class="flow-box green" style="margin-left:130px">SQLAlchemy writes to Postgres</div>
+          <div class="flow-note">Claim model</div>
+        </div>
+        <div class="flow-row">
+          <div class="flow-arrow" style="margin-left:120px">↓</div>
+        </div>
+        <div class="flow-row">
+          <div class="flow-box amber" style="margin-left:130px">Pydantic schema serialises response</div>
+          <div class="flow-note">ClaimRead</div>
+        </div>
+        <div class="flow-row">
+          <div class="flow-arrow" style="margin-left:120px">↓</div>
+        </div>
+        <div class="flow-row">
+          <div class="flow-box blue" style="margin-left:130px">HTTP Response (JSON)</div>
+        </div>
+      </div>
+
+      <p class="prose">Auth, validation rules beyond types, and error handling patterns come in later slices. Right now you're building the minimum working path.</p>
+
+      <div class="section-title" style="font-size:15px; margin-top:24px; margin-bottom:10px;">How the pieces fit together</div>
+
+      <p class="prose">Before touching any file, it helps to know what job each one has. This slice touches four files — each is a separate ingredient, and the router is where they finally get combined:</p>
+
+      <div class="flow-diagram">
+        <div class="flow-row" style="align-items:flex-start; gap:14px;">
+          <div class="flow-box gray" style="flex-shrink:0;">app/db.py</div>
+          <div style="font-size:13px; color:#3a3a38; line-height:1.6;">Sets up the machinery for talking to Postgres: the engine, the session factory, and now, the per-request session provider (<code>get_db</code>). It never queries anything itself.</div>
+        </div>
+        <div class="flow-row" style="align-items:flex-start; gap:14px; margin-top:10px;">
+          <div class="flow-box blue" style="flex-shrink:0;">app/models/*.py</div>
+          <div style="font-size:13px; color:#3a3a38; line-height:1.6;">Describes what tables exist and their columns (already built in Slice 1).</div>
+        </div>
+        <div class="flow-row" style="align-items:flex-start; gap:14px; margin-top:10px;">
+          <div class="flow-box amber" style="flex-shrink:0;">app/schemas.py</div>
+          <div style="font-size:13px; color:#3a3a38; line-height:1.6;">Describes what shape the API's inputs and outputs are.</div>
+        </div>
+        <div class="flow-row" style="align-items:flex-start; gap:14px; margin-top:10px;">
+          <div class="flow-box green" style="flex-shrink:0;">app/routers/claims.py</div>
+          <div style="font-size:13px; color:#3a3a38; line-height:1.6;">Is where all of the above finally get used together: receive a request, validate it with a schema, get a session via <code>get_db</code>, build a model instance, save it, return a schema.</div>
+        </div>
+      </div>
+
+      <p class="prose">Keep this shape in mind as you move through the remaining steps — <code>db.py</code>, models, and schemas are all just ingredients; the router is where the actual request/response logic lives.</p>
+    </section>
+
+    <!-- ── TWO MODELS ── -->
+    <section class="section" id="two-models" style="display:none">
+      <div class="section-label">Concept</div>
+      <div class="section-title">Two sets of models — why does this exist?</div>
+
+      <p class="prose">After Slice 1, you have <strong>SQLAlchemy models</strong> in <code>app/models/</code>. Slice 2 introduces a second set: <strong>Pydantic schemas</strong>. This trips up almost everyone the first time.</p>
+
+      <div class="callout callout-accent">
+        <span class="callout-icon">💡</span>
+        <span><strong>One sentence:</strong> SQLAlchemy models describe the database table. Pydantic schemas describe the API contract.</span>
+      </div>
+
+      <p class="prose">They serve different purposes and live at different layers:</p>
+
+      <div class="flow-diagram">
+        <div class="flow-row">
+          <div class="flow-box blue">SQLAlchemy model</div>
+          <div class="flow-note">→ maps Python class to Postgres columns. Used by the ORM to read/write rows.</div>
+        </div>
+        <div class="flow-row" style="margin-top:8px">
+          <div class="flow-box amber">Pydantic schema</div>
+          <div class="flow-note">→ defines JSON shape. Used by FastAPI to validate requests and serialise responses.</div>
+        </div>
+      </div>
+
+      <p class="prose">Why can't you use the SQLAlchemy model directly as the response shape? Several reasons:</p>
+
+      <p class="prose">The DB row often has fields you don't want to expose (internal flags, relationships). Request bodies often omit fields that the DB generates (UUIDs, timestamps). Response shapes may join or transform data. And SQLAlchemy objects carry session state that Pydantic can't serialise.</p>
+
+      <p class="prose">The naming convention you'll follow: <code>ClaimCreate</code> = what the caller sends, <code>ClaimRead</code> = what the API returns. The <code>*Create</code> schema has no <code>id</code> or <code>created_at</code> — those are server-generated. The <code>*Read</code> schema has them.</p>
+
+      <div class="callout callout-amber">
+        <span class="callout-icon">↕</span>
+        <span><strong>Trade-off you're accepting:</strong> two parallel class hierarchies to maintain. For each new entity, you'll add both a model and a schema. Worth it — this boundary protects your API contract from DB internals.</span>
+      </div>
+    </section>
+
+    <!-- ── DEPENDS ── -->
+    <section class="section" id="depends" style="display:none">
+      <div class="section-label">Concept</div>
+      <div class="section-title">Dependencies and <code>Depends()</code></div>
+
+      <p class="prose">Every route that touches the database needs a session. You could open and close one inside each route function — but that's repetitive, error-prone, and hard to test. FastAPI's <strong>dependency injection</strong> solves this cleanly.</p>
+
+      <p class="prose">A <strong>dependency</strong> is a function FastAPI calls before your route handler and injects the result. You declare what you need as a parameter with a default value of <code>Depends(some_function)</code>, and FastAPI calls that function for you, injects the result, and cleans up afterwards.</p>
+
+      <div class="code-block">
+        <div class="code-lang">python</div>
+        <pre>def get_db():
+    db = SessionLocal()
+    try:
+        yield db        # ← hands the session to the route
+    finally:
+        db.close()      # ← runs after the route returns (even on exception)
+
+@router.get("/claims")
+def list_claims(db: Session = Depends(get_db)):
+    return db.query(Claim).all()</pre>
+      </div>
+
+      <p class="prose">You don't call <code>get_db()</code> yourself — FastAPI does. This is <strong>dependency injection</strong>: a way to share setup/teardown code across many routes without repeating it inside each one.</p>
+
+      <div class="section-title" style="font-size:15px; margin-top:24px; margin-bottom:10px;">What <code>yield</code> means here</div>
+
+      <p class="prose"><code>yield</code> is a Python keyword that turns a function into a <strong>generator</strong> — a function that can pause, hand something back, and resume later.</p>
+
+      <div class="flow-diagram">
+        <div class="flow-row">
+          <div class="flow-box gray" style="white-space:normal; font-size:11px;">Normal function: call → run to end → return value → done</div>
+        </div>
+        <div class="flow-row" style="margin-top:8px;">
+          <div class="flow-box blue" style="white-space:normal; font-size:11px;">Generator with yield: call → run until yield → <strong>pause, hand value to caller</strong> → caller does its work → resume after yield → run to end</div>
+        </div>
+      </div>
+
+      <p class="prose">In <code>get_db()</code>, the exact sequence of events is:</p>
+
+      <div class="flow-diagram">
+        <div class="flow-row"><div class="flow-box gray">1. FastAPI calls get_db()</div></div>
+        <div class="flow-row"><div class="flow-arrow" style="margin-left:20px">↓</div></div>
+        <div class="flow-row"><div class="flow-box gray">2. Opens DB session: db = SessionLocal()</div></div>
+        <div class="flow-row"><div class="flow-arrow" style="margin-left:20px">↓</div></div>
+        <div class="flow-row"><div class="flow-box amber">3. Hits `yield db` — PAUSES, hands db to FastAPI</div></div>
+        <div class="flow-row"><div class="flow-arrow" style="margin-left:20px">↓</div></div>
+        <div class="flow-row"><div class="flow-box blue">4. FastAPI injects db into your route handler</div></div>
+        <div class="flow-row"><div class="flow-arrow" style="margin-left:20px">↓</div></div>
+        <div class="flow-row"><div class="flow-box blue">5. Your route runs (queries, commits, etc.)</div></div>
+        <div class="flow-row"><div class="flow-arrow" style="margin-left:20px">↓</div></div>
+        <div class="flow-row"><div class="flow-box blue">6. Your route returns</div></div>
+        <div class="flow-row"><div class="flow-arrow" style="margin-left:20px">↓</div></div>
+        <div class="flow-row"><div class="flow-box amber">7. FastAPI resumes get_db() after the yield</div></div>
+        <div class="flow-row"><div class="flow-arrow" style="margin-left:20px">↓</div></div>
+        <div class="flow-row"><div class="flow-box green">8. finally block runs: db.close()</div></div>
+      </div>
+
+      <div class="callout callout-amber">
+        <span class="callout-icon">⚠</span>
+        <span>The <code>try / finally</code> wrapper is critical: <code>finally</code> runs regardless of what happened in step 5. If your route raises an exception, the session is still closed. Without it, a crashed route would leak an open DB connection.</span>
+      </div>
+
+      <div class="callout callout-accent">
+        <span class="callout-icon">💡</span>
+        <span><strong>Hotel key card analogy:</strong> the receptionist (<code>get_db</code>) opens the room (DB session), hands you the key card (<code>yield db</code>), you use the room (route runs), hand the card back, and the receptionist locks up (<code>db.close()</code>). The receptionist manages open/close — you just use the room.</span>
+      </div>
+
+      <div class="section-title" style="font-size:15px; margin-top:24px; margin-bottom:10px;">Where <code>Depends()</code> appears in later slices</div>
+
+      <p class="prose">This pattern repeats in every slice from here on. Here's exactly where you'll see it:</p>
+
+      <div class="flow-diagram">
+        <div class="flow-row" style="align-items:flex-start; gap:14px;">
+          <div class="flow-box green" style="flex-shrink:0;">Slice 2 · now</div>
+          <div style="font-size:13px; color:#3a3a38; line-height:1.6;"><strong>DB session</strong> — <code>db: Session = Depends(get_db)</code>. Every route that touches Postgres gets a session injected this way.</div>
+        </div>
+        <div class="flow-row" style="align-items:flex-start; gap:14px; margin-top:10px;">
+          <div class="flow-box amber" style="flex-shrink:0;">Slice 3</div>
+          <div style="font-size:13px; color:#3a3a38; line-height:1.6;"><strong>Testing</strong> — you'll override <code>get_db</code> in <code>conftest.py</code> to inject a test session that rolls back after each test. The routes don't change — you just swap the dependency. <code>app.dependency_overrides[get_db] = get_test_db</code></div>
+        </div>
+        <div class="flow-row" style="align-items:flex-start; gap:14px; margin-top:10px;">
+          <div class="flow-box amber" style="flex-shrink:0;">Slice 4</div>
+          <div style="font-size:13px; color:#3a3a38; line-height:1.6;"><strong>Authentication</strong> — you'll write a <code>get_current_user</code> dependency that reads a JWT token from the request header and returns the authenticated user — or raises a 401. Every protected route does: <code>current_user: User = Depends(get_current_user)</code>. Auth is enforced before the route body even runs.</div>
+        </div>
+        <div class="flow-row" style="align-items:flex-start; gap:14px; margin-top:10px;">
+          <div class="flow-box blue" style="flex-shrink:0;">Phase D</div>
+          <div style="font-size:13px; color:#3a3a38; line-height:1.6;"><strong>AI subsystem</strong> — when you wire the Claude API into routes (document extraction, claim triage), you'll inject a configured AI client the same way via <code>get_ai_client</code>. Same pattern, different resource.</div>
+        </div>
+      </div>
+
+      <div class="callout callout-green">
+        <span class="callout-icon">✓</span>
+        <span><strong>The mental model:</strong> <code>Depends()</code> is FastAPI's answer to "how do I share a resource (DB session, auth user, AI client) across many routes without repeating open/use/close logic in each one?" The dependency handles setup and teardown. The route handles business logic. They stay separate — which is why routes are easy to test and easy to read.</span>
+      </div>
+    </section>
+
+    <!-- ── LIFECYCLE ── -->
+    <section class="section" id="lifecycle" style="display:none">
+      <div class="section-label">Concept</div>
+      <div class="section-title">Full request lifecycle</div>
+
+      <p class="prose">Here's the complete sequence for a <code>POST /claims</code> request, so you can trace a bug at any step:</p>
+
+      <div class="flow-diagram">
+        <div class="flow-row"><div class="flow-box blue">1. HTTP POST /claims arrives</div></div>
+        <div class="flow-row"><div class="flow-arrow" style="margin-left:20px">↓</div></div>
+        <div class="flow-row"><div class="flow-box amber">2. FastAPI reads request body JSON</div></div>
+        <div class="flow-row"><div class="flow-arrow" style="margin-left:20px">↓</div></div>
+        <div class="flow-row"><div class="flow-box amber">3. Pydantic validates against ClaimCreate — 422 if invalid</div></div>
+        <div class="flow-row"><div class="flow-arrow" style="margin-left:20px">↓</div></div>
+        <div class="flow-row"><div class="flow-box gray">4. get_db() runs — opens SessionLocal, yields db</div></div>
+        <div class="flow-row"><div class="flow-arrow" style="margin-left:20px">↓</div></div>
+        <div class="flow-row"><div class="flow-box gray">5. create_claim(payload, db) runs</div></div>
+        <div class="flow-row"><div class="flow-arrow" style="margin-left:20px">↓</div></div>
+        <div class="flow-row"><div class="flow-box green">6. Claim(**payload.model_dump()) → db.add() → db.commit()</div></div>
+        <div class="flow-row"><div class="flow-arrow" style="margin-left:20px">↓</div></div>
+        <div class="flow-row"><div class="flow-box green">7. db.refresh(claim) — reloads UUID + timestamps from DB</div></div>
+        <div class="flow-row"><div class="flow-arrow" style="margin-left:20px">↓</div></div>
+        <div class="flow-row"><div class="flow-box amber">8. FastAPI serialises return value through ClaimRead</div></div>
+        <div class="flow-row"><div class="flow-arrow" style="margin-left:20px">↓</div></div>
+        <div class="flow-row"><div class="flow-box blue">9. 201 response with JSON body</div></div>
+        <div class="flow-row"><div class="flow-arrow" style="margin-left:20px">↓</div></div>
+        <div class="flow-row"><div class="flow-box gray">10. get_db() finally block runs — db.close()</div></div>
+      </div>
+
+      <p class="prose">Steps 2–3 and 8 are handled automatically by FastAPI. Steps 4 and 10 are handled by <code>Depends(get_db)</code>. You write steps 5–7.</p>
+    </section>
+
+    <!-- ── PREREQ ── -->
+    <section class="section" id="prereq" style="display:none">
+      <div class="section-label">Before you start</div>
+      <div class="section-title">Move main.py into the app/ package</div>
+
+      <p class="prose">In Slice 0, <code>main.py</code> was placed in the repo root — correct for a minimal scaffold with no package structure yet. Now that <code>app/</code> holds models, db, and schemas, <code>main.py</code> belongs inside it. This is FastAPI best practice: the entry point lives in the same package as everything it wires together.</p>
+
+      <div class="flow-diagram">
+        <div class="flow-row" style="align-items:flex-start; gap:14px;">
+          <div class="flow-box gray" style="flex-shrink:0;">Slice 0</div>
+          <div style="font-size:13px; color:#3a3a38; line-height:1.6;"><code>main.py</code> in root — fine for a single-file scaffold with no package. Run with <code>uvicorn main:app --reload</code></div>
+        </div>
+        <div class="flow-row" style="align-items:flex-start; gap:14px; margin-top:8px;">
+          <div class="flow-box green" style="flex-shrink:0;">Slice 2+</div>
+          <div style="font-size:13px; color:#3a3a38; line-height:1.6;"><code>app/main.py</code> — entry point inside the package, alongside models, schemas, routers. Run with <code>uvicorn app.main:app --reload</code></div>
+        </div>
+      </div>
+
+      <p class="prose">Check where <code>main.py</code> currently lives:</p>
+
+      <div class="code-block">
+        <div class="code-lang">bash</div>
+        <pre>ls *.py     # if main.py appears here, it's still in the root
+ls app/     # if main.py appears here, you're already done</pre>
+      </div>
+
+      <p class="prose">If it's in the root, move it:</p>
+
+      <div class="code-block">
+        <div class="code-lang">bash</div>
+        <pre>mv main.py app/main.py</pre>
+      </div>
+
+      <div class="callout callout-accent">
+        <span class="callout-icon">💡</span>
+        <span><strong>Why <code>app.main:app</code>?</strong> The part before the colon is a Python module path, not a file path. <code>app.main</code> means "the <code>main</code> module inside the <code>app</code> package." The part after the colon is the FastAPI instance variable name inside that module. Moving <code>main.py</code> into <code>app/</code> is what changes the prefix from <code>main:</code> to <code>app.main:</code>.</span>
+      </div>
+
+      <p class="prose">Confirm it still starts:</p>
+
+      <div class="code-block">
+        <div class="code-lang">bash</div>
+        <pre>source .venv/bin/activate
+uvicorn app.main:app --reload</pre>
+      </div>
+
+      <p class="prose">Visit <code>http://localhost:8000/health</code> — should return <code>{"status": "ok"}</code>. Also confirm migrations are applied:</p>
+
+      <div class="code-block">
+        <div class="code-lang">bash</div>
+        <pre>psql $DATABASE_URL -c "\dt"</pre>
+      </div>
+
+      <p class="prose">You should see <code>customers</code>, <code>policies</code>, <code>claims</code>, and <code>alembic_version</code>. Stop the server (<code>Ctrl+C</code>) before writing new files.</p>
+    </section>
+
+    <!-- ── STEP 1 ── -->
+    <section class="section" id="step1" style="display:none">
+      <div class="section-label">Step 1</div>
+      <div class="section-title">Pydantic schemas</div>
+
+      <div class="code-block">
+        <div class="code-lang">bash</div>
+        <pre>touch app/schemas.py</pre>
+      </div>
+
+      <div class="code-block">
+        <div class="code-lang">python — app/schemas.py</div>
+        <pre>from datetime import datetime
+from uuid import UUID
+
+from pydantic import BaseModel
+
+
+class ClaimCreate(BaseModel):
+    """Fields the caller must provide when opening a new claim."""
+    policy_id: UUID
+    description: str
+    status: str = "open"
+
+
+class ClaimRead(BaseModel):
+    """Shape of a claim returned from the API."""
+    id: UUID
+    policy_id: UUID
+    description: str
+    status: str
+    created_at: datetime
+
+    model_config = {"from_attributes": True}</pre>
+      </div>
+
+      <div class="callout callout-accent">
+        <span class="callout-icon">💡</span>
+        <span><strong>What does <code>from_attributes = True</code> do?</strong> By default Pydantic expects a dictionary. SQLAlchemy returns objects with attributes (not dicts). This flag tells Pydantic "read from object attributes" — without it, <code>ClaimRead.model_validate(db_claim)</code> would fail with a validation error.</span>
+      </div>
+
+      <p class="prose">Notice: <code>ClaimCreate</code> has no <code>id</code> or <code>created_at</code> — the DB generates those. <code>ClaimRead</code> has both — the API must return them.</p>
+    </section>
+
+    <!-- ── STEP 2 ── -->
+    <section class="section" id="step2" style="display:none">
+      <div class="section-label">Step 2</div>
+      <div class="section-title">Session dependency</div>
+
+      <p class="prose">Open <code>app/db.py</code>. You already have <code>engine</code> and <code>Base</code>. Add <code>SessionLocal</code> and the dependency function at the bottom:</p>
+
+      <div class="code-block">
+        <div class="code-lang">python — additions to app/db.py</div>
+        <pre>from sqlalchemy.orm import sessionmaker, Session
+from typing import Generator
+
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+
+
+def get_db() -> Generator[Session, None, None]:
+    """Yield a database session; close it when the request is done."""
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()</pre>
+      </div>
+
+      <div class="callout callout-amber">
+        <span class="callout-icon">⚠</span>
+        <span>Check your existing imports in <code>db.py</code> before adding — avoid duplicating <code>sessionmaker</code> or <code>Session</code> if already present.</span>
+      </div>
+
+      <p class="prose"><code>autocommit=False</code> means changes are only persisted when you call <code>db.commit()</code> explicitly — no accidental writes. <code>autoflush=False</code> means SQLAlchemy won't emit SQL until you commit or query — keeps behaviour predictable.</p>
+    </section>
+
+    <!-- ── STEP 3 ── -->
+    <section class="section" id="step3" style="display:none">
+      <div class="section-label">Step 3</div>
+      <div class="section-title">Claims router</div>
+
+      <p class="prose">Keep routes out of <code>main.py</code> — that file stays thin. Create a dedicated router module:</p>
+
+      <div class="code-block">
+        <div class="code-lang">bash</div>
+        <pre>mkdir -p app/routers
+touch app/routers/__init__.py
+touch app/routers/claims.py</pre>
+      </div>
+
+      <div class="code-block">
+        <div class="code-lang">python — app/routers/claims.py</div>
+        <pre>from uuid import UUID
+
+from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy.orm import Session
+
+from app.db import get_db
+from app.models.claim import Claim
+from app.schemas import ClaimCreate, ClaimRead
+
+router = APIRouter(prefix="/claims", tags=["claims"])
+
+
+@router.post("/", response_model=ClaimRead, status_code=201)
+def create_claim(payload: ClaimCreate, db: Session = Depends(get_db)):
+    claim = Claim(**payload.model_dump())
+    db.add(claim)
+    db.commit()
+    db.refresh(claim)
+    return claim
+
+
+@router.get("/", response_model=list[ClaimRead])
+def list_claims(db: Session = Depends(get_db)):
+    return db.query(Claim).all()
+
+
+@router.get("/{claim_id}", response_model=ClaimRead)
+def get_claim(claim_id: UUID, db: Session = Depends(get_db)):
+    claim = db.query(Claim).filter(Claim.id == claim_id).first()
+    if not claim:
+        raise HTTPException(status_code=404, detail="Claim not found")
+    return claim</pre>
+      </div>
+
+      <p class="prose"><strong>Line by line — the create route:</strong></p>
+      <p class="prose"><code>payload: ClaimCreate</code> — FastAPI validates the request body automatically. Invalid body → 422, no code needed.</p>
+      <p class="prose"><code>Claim(**payload.model_dump())</code> — converts Pydantic object to dict, unpacks as keyword args into the SQLAlchemy constructor.</p>
+      <p class="prose"><code>db.add(claim)</code> — stages the row. Not yet in Postgres.</p>
+      <p class="prose"><code>db.commit()</code> — writes to Postgres. UUID and timestamps are assigned here.</p>
+      <p class="prose"><code>db.refresh(claim)</code> — reloads the object from the DB so <code>id</code> and <code>created_at</code> are populated before returning.</p>
+      <p class="prose"><code>response_model=ClaimRead</code> — FastAPI passes the returned object through <code>ClaimRead</code>, filtering out any fields not in the schema.</p>
+    </section>
+
+    <!-- ── STEP 4 ── -->
+    <section class="section" id="step4" style="display:none">
+      <div class="section-label">Step 4</div>
+      <div class="section-title">Register the router in main.py</div>
+
+      <p class="prose">Two lines added to <code>app/main.py</code> — the import and the <code>include_router</code> call:</p>
+
+      <div class="code-block">
+        <div class="code-lang">python — additions to app/main.py</div>
+        <pre>from app.routers import claims          # ← add this import
+
+app.include_router(claims.router)      # ← add after app = FastAPI(...)</pre>
+      </div>
+
+      <p class="prose"><code>main.py</code> should remain short: imports, <code>app = FastAPI()</code>, the <code>/health</code> route, and router registrations. Nothing else lives here yet.</p>
+    </section>
+
+    <!-- ── STEP 5 ── -->
+    <section class="section" id="step5" style="display:none">
+      <div class="section-label">Step 5</div>
+      <div class="section-title">Smoke test via Swagger UI</div>
+
+      <div class="code-block">
+        <div class="code-lang">bash</div>
+        <pre>uvicorn app.main:app --reload</pre>
+      </div>
+
+      <p class="prose">Open <code>http://localhost:8000/docs</code>. You should see a <strong>Claims</strong> section with three endpoints.</p>
+
+      <p class="prose"><strong>You'll need a valid <code>policy_id</code> to create a claim</strong> (foreign key constraint). Seed one in psql:</p>
+
+      <div class="code-block">
+        <div class="code-lang">sql — run in psql $DATABASE_URL</div>
+        <pre>INSERT INTO customers (id, name, email)
+VALUES (gen_random_uuid(), 'Alice Test', 'alice@example.com');
+
+-- copy the id:
+SELECT id FROM customers LIMIT 1;
+
+INSERT INTO policies (id, customer_id, policy_number, status)
+VALUES (gen_random_uuid(), '&lt;customer_id&gt;', 'POL-001', 'active');
+
+-- copy this id for the next step:
+SELECT id FROM policies LIMIT 1;</pre>
+      </div>
+
+      <p class="prose"><strong>Test 1 — Create a claim</strong> via Swagger <code>POST /claims</code>:</p>
+
+      <div class="code-block">
+        <div class="code-lang">json — request body</div>
+        <pre>{
+  "policy_id": "&lt;policy_id_from_above&gt;",
+  "description": "Water damage to kitchen ceiling",
+  "status": "open"
+}</pre>
+      </div>
+
+      <p class="prose">Expected: <code>201 Created</code> with <code>id</code> and <code>created_at</code> in the response body.</p>
+
+      <p class="prose"><strong>Test 2</strong> — <code>GET /claims</code> → array with your claim.</p>
+      <p class="prose"><strong>Test 3</strong> — <code>GET /claims/{id}</code> with the UUID from Test 1 → same claim.</p>
+      <p class="prose"><strong>Test 4</strong> — <code>GET /claims/00000000-0000-0000-0000-000000000000</code> → <code>404</code>.</p>
+
+      <p class="prose"><strong>Test 5 — Verify in Postgres:</strong></p>
+
+      <div class="code-block">
+        <div class="code-lang">bash</div>
+        <pre>psql $DATABASE_URL -c "SELECT id, description, status, created_at FROM claims;"</pre>
+      </div>
+
+      <div class="callout callout-green">
+        <span class="callout-icon">✓</span>
+        <span>All five tests pass? Slice 2 is done. Commit before writing the ADR.</span>
+      </div>
+    </section>
+
+    <!-- ── STEP 6 ── -->
+    <section class="section" id="step6" style="display:none">
+      <div class="section-label">Step 6</div>
+      <div class="section-title">Commit</div>
+
+      <div class="code-block">
+        <div class="code-lang">bash</div>
+        <pre>git add app/schemas.py app/db.py app/routers/ app/main.py
+git commit -m "feat: add claims CRUD endpoints (POST, GET list, GET by id)"</pre>
+      </div>
+
+      <p class="prose">Use the <code>feat:</code> prefix — this is a new feature, not a fix or chore.</p>
+    </section>
+
+    <!-- ── STEP 7 ── -->
+    <section class="section" id="step7" style="display:none">
+      <div class="section-label">Step 7</div>
+      <div class="section-title">ADR-003</div>
+
+      <p class="prose">ADR-003 covers the three decisions made in this slice. Your job is to fill in the <strong>Consequences</strong> and <strong>Open questions</strong> sections yourself — the decisions and rationale are pre-written so you can focus on reflecting.</p>
+
+      <div class="adr-prompt">
+        <div class="adr-prompt-label">Prompt questions for the Consequences section</div>
+        <ul>
+          <li>What does the Pydantic/SQLAlchemy split make easier in future slices (tests, versioning, auth)?</li>
+          <li>What cost are you accepting by maintaining two parallel class hierarchies?</li>
+          <li>The session dependency is synchronous — what does this mean for future async routes?</li>
+          <li>Was there anything surprising during implementation worth recording?</li>
+        </ul>
+      </div>
+
+      <div class="adr-prompt" style="margin-top: 10px;">
+        <div class="adr-prompt-label">Prompt questions for Open questions</div>
+        <ul>
+          <li>When should you add input validation beyond Pydantic's type checks?</li>
+          <li>How will the session dependency change if you move to async routes?</li>
+          <li>Are there scenarios where returning the full <code>ClaimRead</code> is too much data?</li>
+        </ul>
+      </div>
+
+      <p class="prose" style="margin-top:14px">Create the file and commit it with a <code>docs:</code> prefix:</p>
+
+      <div class="code-block">
+        <div class="code-lang">bash</div>
+        <pre>touch docs/adr/ADR-003-api-layer.md
+# ... fill it in ...
+git add docs/adr/ADR-003-api-layer.md
+git commit -m "docs: add ADR-003 API layer decisions"</pre>
+      </div>
+    </section>
+
+    <!-- ── DONE ── -->
+    <section class="section" id="done" style="display:none">
+      <div class="section-label">Done checklist</div>
+      <div class="section-title">Slice 2 complete?</div>
+
+      <div class="checklist">
+        <div class="check-item">
+          <div class="check-box"></div>
+          <div class="check-text"><code>POST /claims</code> returns 201 with a UUID and <code>created_at</code></div>
+        </div>
+        <div class="check-item">
+          <div class="check-box"></div>
+          <div class="check-text"><code>GET /claims</code> returns a list</div>
+        </div>
+        <div class="check-item">
+          <div class="check-box"></div>
+          <div class="check-text"><code>GET /claims/{id}</code> returns the claim</div>
+        </div>
+        <div class="check-item">
+          <div class="check-box"></div>
+          <div class="check-text"><code>GET /claims/00000000-0000-0000-0000-000000000000</code> returns 404</div>
+        </div>
+        <div class="check-item">
+          <div class="check-box"></div>
+          <div class="check-text">Row confirmed in Postgres via <code>psql</code></div>
+        </div>
+        <div class="check-item">
+          <div class="check-box"></div>
+          <div class="check-text">Committed with <code>feat:</code> prefix</div>
+        </div>
+        <div class="check-item">
+          <div class="check-box"></div>
+          <div class="check-text">ADR-003 written and committed with <code>docs:</code> prefix</div>
+        </div>
+      </div>
+
+      <div class="callout callout-green" style="margin-top:20px">
+        <span class="callout-icon">→</span>
+        <span><strong>Next: Slice 3</strong> — Tests + structured logging. You'll write pytest tests against these endpoints, and add structured logging to the request/response cycle. The dependency injection pattern you just learned makes testing straightforward.</span>
+      </div>
+
+      <div style="margin-top: 20px;">
+        <div class="section-label">Common errors</div>
+        <table class="error-table">
+          <thead>
+            <tr>
+              <th>Error</th>
+              <th>Cause &amp; fix</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>422 Unprocessable Entity on POST</td>
+              <td>Request body failed Pydantic validation. Check the error <code>detail</code> field — it names the exact field and rule that failed.</td>
+            </tr>
+            <tr>
+              <td>IntegrityError: ForeignKeyViolation</td>
+              <td>The <code>policy_id</code> doesn't exist in <code>policies</code>. Seed the policy first (Step 5 shows how).</td>
+            </tr>
+            <tr>
+              <td>AttributeError: 'Claim' has no 'model_dump'</td>
+              <td>You called <code>model_dump()</code> on a SQLAlchemy object. It's a Pydantic method — only call it on <code>ClaimCreate</code> / <code>ClaimRead</code> instances.</td>
+            </tr>
+            <tr>
+              <td>ValidationError: from_attributes</td>
+              <td>Missing <code>model_config = {"from_attributes": True}</code> on <code>ClaimRead</code>. Add it and restart the server.</td>
+            </tr>
+            <tr>
+              <td>Import errors after adding the router</td>
+              <td><code>app/routers/__init__.py</code> is missing. Python needs it to treat the directory as a package.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ── FIELD NOTE: SQLMODEL ── -->
+    <section class="section" id="fn-sqlmodel" style="display:none">
+      <div class="section-label">Field note · real bug hit while building this slice</div>
+      <div class="section-title">SQLModel vs. plain SQLAlchemy + Pydantic</div>
+
+      <p class="prose">FastAPI's official docs have a full SQL tutorial built on <strong>SQLModel</strong> — a library that merges a SQLAlchemy model and a Pydantic schema into <strong>one single class</strong>. Skimming that tutorial while working on a plain SQLAlchemy + Pydantic project (this project's actual stack) produces code that looks plausible but doesn't work.</p>
+
+      <div class="code-block">
+        <div class="code-lang">python — SQLModel pattern (NOT this project's stack)</div>
+        <pre>class Hero(SQLModel, table=True):
+    id: int | None = Field(default=None, primary_key=True)
+    name: str
+
+@app.post("/heroes/")
+def create_hero(hero: Hero, session: SessionDep) -> Hero:
+    session.add(hero)          # works — Hero IS the DB model
+    session.commit()
+    session.refresh(hero)
+    return hero</pre>
+      </div>
+
+      <p class="prose">In SQLModel, <code>session.add(hero)</code> works directly because <code>Hero</code> <strong>is</strong> the database-mapped class — there's no separate Pydantic/SQLAlchemy split to bridge. Copying this pattern into a project using separate <code>ClaimCreate</code> (Pydantic) and <code>Claim</code> (SQLAlchemy) classes produces <code>session.add(claim)</code> where <code>claim</code> is a Pydantic object — which fails, because <code>session.add()</code> only accepts SQLAlchemy-mapped instances.</p>
+
+      <div class="callout callout-amber">
+        <span class="callout-icon">⚠</span>
+        <span><strong>How to tell which tutorial you're reading:</strong> if the model class inherits from <code>SQLModel</code> and has <code>table=True</code>, that's SQLModel — a different library. This project's ADR-003 deliberately chose the split-class pattern (plain SQLAlchemy models + separate Pydantic schemas), so SQLModel examples don't transfer directly. Stick to plain FastAPI + SQLAlchemy docs, not the SQLModel tutorial section.</span>
+      </div>
+    </section>
+
+    <!-- ── FIELD NOTE: BRIDGE LINE ── -->
+    <section class="section" id="fn-bridge" style="display:none">
+      <div class="section-label">Field note</div>
+      <div class="section-title">The bridge line — Pydantic in, SQLAlchemy out</div>
+
+      <p class="prose">This is the single most-repeated correction while building the create route. Neither Pydantic nor SQLAlchemy knows the other library exists. There is no automatic conversion between a validated <code>ClaimCreate</code> object and a database-ready <code>Claim</code> object — you write that conversion explicitly, by hand, every time.</p>
+
+      <div class="code-block">
+        <div class="code-lang">python</div>
+        <pre>claim_dict = claim.model_dump(exclude_unset=True)   # Pydantic → plain dict
+claim_dict["status"] = "Submitted"                   # server-assigned fields
+claim_dict["reference_number"] = str(uuid.uuid4())
+
+db_claim = Claim(**claim_dict)   # ← THE BRIDGE — dict → real SQLAlchemy instance
+session.add(db_claim)            # only Claim instances are valid here
+session.commit()
+session.refresh(db_claim)        # reload id, filed_at, updated_at
+return db_claim                  # return the DB-backed object, not the input</pre>
+      </div>
+
+      <div class="callout callout-accent">
+        <span class="callout-icon">💡</span>
+        <span><strong>The pattern to memorise:</strong> <code>session.add()</code>, <code>session.commit()</code>, and <code>session.refresh()</code> must always operate on the same variable — the real <code>Claim</code> instance — never the original Pydantic input. Mixing the two (e.g. calling <code>session.refresh(claim)</code> when <code>claim</code> is still the Pydantic object) fails, because SQLAlchemy only tracks objects it created or that were explicitly added to the session.</span>
+      </div>
+    </section>
+
+    <!-- ── FIELD NOTE: SESSION TYPE ── -->
+    <section class="section" id="fn-session-type" style="display:none">
+      <div class="section-label">Field note</div>
+      <div class="section-title"><code>Session</code> vs. <code>SessionLocal</code> — factory vs. instance</div>
+
+      <p class="prose">A recurring type-annotation mistake: using <code>SessionLocal</code> as the type in <code>Annotated[SessionLocal, Depends(get_db)]</code>, when the correct type is <code>Session</code> (from <code>sqlalchemy.orm</code>).</p>
+
+      <div class="flow-diagram">
+        <div class="flow-row" style="align-items:flex-start; gap:14px;">
+          <div class="flow-box amber" style="flex-shrink:0;">SessionLocal</div>
+          <div style="font-size:13px; color:#3a3a38; line-height:1.6;">A <strong>factory</strong> — created once via <code>sessionmaker(bind=engine)</code>. Calling it, <code>SessionLocal()</code>, produces a new session instance. It is never itself the type of a value flowing through the app.</div>
+        </div>
+        <div class="flow-row" style="align-items:flex-start; gap:14px; margin-top:10px;">
+          <div class="flow-box green" style="flex-shrink:0;">Session</div>
+          <div style="font-size:13px; color:#3a3a38; line-height:1.6;">The <strong>class</strong> of the object that <code>get_db()</code> actually <code>yield</code>s. This is the correct type for the dependency annotation, because it describes what a route handler receives.</div>
+        </div>
+      </div>
+
+      <div class="code-block">
+        <div class="code-lang">python — app/db.py</div>
+        <pre>from sqlalchemy.orm import sessionmaker, Session   # ← both imported
+
+SessionLocal = sessionmaker(bind=engine)             # factory
+
+def get_db():
+    db = SessionLocal()      # an instance — this is a Session
+    try:
+        yield db
+    finally:
+        db.close()
+
+SessionDep = Annotated[Session, Depends(get_db)]     # ← Session, not SessionLocal</pre>
+      </div>
+
+      <p class="prose">General rule: the type in <code>Annotated[X, Depends(fn)]</code> should always match what <code>fn</code> actually <code>yield</code>s or <code>return</code>s — not the name of whatever helper was used to construct it.</p>
+    </section>
+
+    <!-- ── FIELD NOTE: EXECUTE() RESULT ── -->
+    <section class="section" id="fn-execute" style="display:none">
+      <div class="section-label">Field note</div>
+      <div class="section-title"><code>session.execute()</code> — the result isn't rows yet</div>
+
+      <p class="prose">Calling <code>select(Claim)</code> only <strong>builds</strong> a query — it doesn't run it. Calling <code>session.execute(stmt)</code> runs it, but returns a <code>Result</code> object, not usable rows directly. A common bug: chaining <code>.scalars()</code> on the wrong side, or forgetting it entirely.</p>
+
+      <div class="code-block">
+        <div class="code-lang">python — WRONG</div>
+        <pre>stmt = select(Claim).scalars().all()      # .scalars() on a statement — invalid, no rows exist yet
+claims = session.execute(select(Claim))   # missing .scalars().all() — returns raw Result, not a list</pre>
+      </div>
+
+      <div class="code-block">
+        <div class="code-lang">python — CORRECT</div>
+        <pre># Single row (or None)
+stmt = select(Claim).where(Claim.id == claim_id)
+claim = session.execute(stmt).scalar_one_or_none()
+
+# Many rows
+stmt = select(Claim)
+claims = session.execute(stmt).scalars().all()</pre>
+      </div>
+
+      <table class="error-table" style="margin-top:14px;">
+        <thead><tr><th>Method</th><th>Use when</th></tr></thead>
+        <tbody>
+          <tr><td>.scalar_one_or_none()</td><td>Expecting exactly one row or none (e.g. lookup by id). Returns the object or <code>None</code>.</td></tr>
+          <tr><td>.scalars().all()</td><td>Expecting a list of rows. Returns a plain Python list of model instances.</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- ── FIELD NOTE: MODEL METADATA ── -->
+    <section class="section" id="fn-metadata" style="display:none">
+      <div class="section-label">Field note</div>
+      <div class="section-title">Model registration &amp; the metadata gotcha</div>
+
+      <p class="prose">Real error hit during testing:</p>
+
+      <div class="code-block">
+        <div class="code-lang">text — actual traceback</div>
+        <pre>sqlalchemy.exc.NoReferencedTableError: Foreign key associated with
+column 'claims.policy_id' could not find table 'policies' with which
+to generate a foreign key to target column 'id'</pre>
+      </div>
+
+      <p class="prose">This looks like a missing-data problem but isn't — it's an <strong>import</strong> problem. SQLAlchemy builds its internal map of tables by registering each model <em>as its file is imported</em>. If nothing in the app's import chain ever imports <code>Policy</code> or <code>Customer</code> — because the router only imports <code>Claim</code> — SQLAlchemy has no idea those tables exist, even though they're physically present in Postgres. The foreign key relationship is Python-level metadata, not something read live from the live DB schema.</p>
+
+      <div class="callout callout-green">
+        <span class="callout-icon">✓</span>
+        <span><strong>Fix:</strong> ensure every model gets imported somewhere in the app's startup path — typically via <code>app/models/__init__.py</code> importing all of them, so importing the package pulls in the full set.</span>
+      </div>
+
+      <div class="code-block">
+        <div class="code-lang">python — app/models/__init__.py</div>
+        <pre>from app.models.customer import Customer
+from app.models.policy import Policy
+from app.models.claim import Claim</pre>
+      </div>
+    </section>
+
+    <!-- ── FIELD NOTE: DEFAULTS ── -->
+    <section class="section" id="fn-defaults" style="display:none">
+      <div class="section-label">Field note</div>
+      <div class="section-title">Python-side defaults vs. database-side defaults</div>
+
+      <p class="prose">Real error hit while seeding test data directly via <code>psql</code>:</p>
+
+      <div class="code-block">
+        <div class="code-lang">text — actual error</div>
+        <pre>ERROR:  null value in column "created_at" of relation "customers"
+violates not-null constraint</pre>
+      </div>
+
+      <p class="prose">The model defines a default:</p>
+
+      <div class="code-block">
+        <div class="code-lang">python — customer.py</div>
+        <pre>created_at: Mapped[datetime] = mapped_column(
+    DateTime, default=datetime.utcnow, nullable=False
+)</pre>
+      </div>
+
+      <p class="prose">This <code>default=</code> is a <strong>Python-side</strong> default — SQLAlchemy fills it in only when a row is inserted <em>through SQLAlchemy</em> (i.e. via <code>session.add()</code> / <code>session.commit()</code>). It is invisible to Postgres itself. Inserting a row with raw SQL via <code>psql</code> bypasses SQLAlchemy entirely, so nothing populates that column — and the <code>NOT NULL</code> constraint at the database level rejects the row.</p>
+
+      <div class="callout callout-accent">
+        <span class="callout-icon">💡</span>
+        <span><strong>When seeding data by hand in <code>psql</code>,</strong> supply every column that has a Python-side (not database-side) default explicitly — e.g. <code>created_at</code> via <code>now()</code>. Only true database-level defaults (declared with <code>server_default=</code> in SQLAlchemy, or a DB-level <code>DEFAULT</code> in a migration) are filled in automatically by Postgres regardless of how the row is inserted.</span>
+      </div>
+    </section>
+
+    <!-- ── FIELD NOTE: CODESPACES PORTS ── -->
+    <section class="section" id="fn-codespaces" style="display:none">
+      <div class="section-label">Field note</div>
+      <div class="section-title">Codespaces port visibility — browser 404 with a healthy server</div>
+
+      <p class="prose">Symptom: <code>uvicorn</code> starts cleanly, <code>curl http://localhost:8000/health</code> from inside the Codespace returns <code>200</code>, but the same URL 404s in the browser.</p>
+
+      <p class="prose">This is not an app bug. If <code>curl</code> from inside the Codespace to the <strong>public forwarded URL</strong> also returns <code>200</code>, the server and tunnel are both healthy — the failure is isolated to the browser tab itself, usually a stale/cached URL from an earlier Codespace session pointing at a dead tunnel.</p>
+
+      <div class="flow-diagram">
+        <div class="flow-row"><div class="flow-box gray">1. curl localhost:8000/health → 200</div></div>
+        <div class="flow-row"><div class="flow-arrow" style="margin-left:20px">↓ still failing in browser?</div></div>
+        <div class="flow-row"><div class="flow-box amber">2. curl &lt;public-url&gt;/health from inside Codespace</div></div>
+        <div class="flow-row"><div class="flow-arrow" style="margin-left:20px">↓ 200 here too → server/tunnel fine</div></div>
+        <div class="flow-row"><div class="flow-box green">3. Problem is browser-side: stale tab, cache, or wrong URL</div></div>
+      </div>
+
+      <p class="prose"><strong>Fix sequence:</strong> set the port to <strong>Public</strong> in the Ports tab (Private ports can behave inconsistently even for the owner) → open the URL fresh via the globe icon in the Ports tab, never a hand-typed or reused tab → hard refresh → try incognito if still failing, to rule out extensions/cache entirely.</p>
+
+      <div class="callout callout-amber">
+        <span class="callout-icon">⚠</span>
+        <span>A 404 from GitHub's tunnel proxy (wrong/stale URL) and a 404 from your own FastAPI app (no matching route) look identical in a browser. The <code>curl -v</code> test is what distinguishes them — check the response headers for <code>x-served-by: tunnels-prod-...</code> versus a plain FastAPI JSON 404 body.</span>
+      </div>
+    </section>
+
+  </div><!-- /pane-body -->
+</div><!-- /content -->
+
+<script>
+  function show(id) {
+    document.querySelectorAll('.section').forEach(s => s.style.display = 'none');
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    const target = document.getElementById(id);
+    if (target) { target.style.display = 'block'; }
+    const btn = document.querySelector(`[onclick="show('${id}')"]`);
+    if (btn) { btn.classList.add('active'); }
+    document.querySelector('.content').scrollTo({ top: 0, behavior: 'smooth' });
+  }
+</script>
+
+</body>
+</html>
