@@ -341,11 +341,22 @@
           <div class="step-title">Verify Postgres (optional daily check)</div>
           <div class="step-desc">Open a second terminal tab and run:</div>
           <div class="code-block">
-            <pre><span class="hl-cmd">psql postgresql://claims:claims@db:5432/claimsdb -c "SELECT 1;"</span>
-<span class="hl-out"> ?column?
-----------
-        1</span></pre>
+            <pre><span class="hl-cmd">psql "postgresql://claims:claims@db:5432/claimsdb" -c '\l'</span>
+<span class="hl-out">List of databases
+  Name    |  Owner   | Encoding | Collate | Ctype | Access privileges
+----------+----------+----------+---------+-------+-------------------
+ claimsdb | claims   | UTF8     | en_US.utf8 | en_US.utf8 | 
+ postgres | claims   | UTF8     | en_US.utf8 | en_US.utf8 | 
+ template0 | postgres | UTF8     | en_US.utf8 | en_US.utf8 | =c/postgres
+ template1 | postgres | UTF8     | en_US.utf8 | en_US.utf8 | =c/postgres</span></pre>
           </div>
+          <div class="step-desc"><strong>Note:</strong> <span class="inline-code">-c</span> sends a command to Postgres and <span class="inline-code">\l</span> lists all available databases.</div>
+          <div class="step-desc"><strong>Common databases you’ll see:</strong></div>
+          <ul class="machine-steps">
+            <li><code>postgres</code> — the default maintenance database created by Postgres  for administrative connection.</li>
+            <li><code>template0</code> — a pristine, read-only template used as a clean source for new databases.</li>
+            <li><code>template1</code> — the default template copied when you run <code>CREATE DATABASE</code>.</li>
+          </ul>
         </div>
       </div>
     </div>
