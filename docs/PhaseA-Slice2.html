@@ -436,12 +436,10 @@
   </style>
 </head>
 <body>
-<a href="index.html" style="position:fixed;top:16px;right:16px;z-index:20;display:inline-flex;align-items:center;gap:8px;font-family:var(--font-mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);text-decoration:none;background:rgba(255,255,255,0.95);padding:8px 10px;border:1px solid #dfe8f2;border-radius:999px;box-shadow:0 4px 12px rgba(0,0,0,0.06);">← Back to main</a>
 
 <!-- SIDEBAR -->
 <nav class="sidebar">
   <div class="sidebar-head">
-    <a href="index.html" class="back-link" style="display:inline-block;margin-bottom:10px;color:var(--accent);font-family:var(--font-mono);font-size:11px;text-decoration:none;">← Back to main</a>
     <div class="sidebar-slice">Slice 2</div>
     <div class="sidebar-title">First End-to-End</div>
   </div>
@@ -949,35 +947,50 @@ app.include_router(claims.router)      # ← add after app = FastAPI(...)</pre>
 
       <p class="prose"><strong>You'll need a valid <code>policy_id</code> to create a claim</strong> (foreign key constraint). Seed one in psql:</p>
 
-      <div class="code-block">
-        <div class="code-lang">sql — run in psql $DATABASE_URL</div>
-        <pre>INSERT INTO customers (id, name, email)
-VALUES (gen_random_uuid(), 'Alice Test', 'alice@example.com');
-
--- copy the id:
-SELECT id FROM customers LIMIT 1;
-
-INSERT INTO policies (id, customer_id, policy_number, status)
-VALUES (gen_random_uuid(), '&lt;customer_id&gt;', 'POL-001', 'active');
-
--- copy this id for the next step:
-SELECT id FROM policies LIMIT 1;</pre>
+      <div class="callout callout-amber">
+        <span class="callout-icon">⚠</span>
+        <span><code>created_at</code> has a <strong>Python-side</strong> default (<code>default=datetime.utcnow</code> in the model) — SQLAlchemy fills it in automatically, but raw SQL via <code>psql</code> bypasses SQLAlchemy entirely. Supply <code>now()</code> explicitly for <code>created_at</code> on every INSERT below, or you'll hit a <code>NOT NULL constraint</code> error.</span>
       </div>
 
-      <p class="prose"><strong>Test 1 — Create a claim</strong> via Swagger <code>POST /claims</code>:</p>
+      <div class="code-block">
+        <div class="code-lang">sql — run in psql $DATABASE_URL</div>
+        <pre>INSERT INTO customers (id, full_name, email, created_at)
+VALUES (gen_random_uuid(), 'Alice Test', 'alice@example.com', now());
+
+-- copy the id:
+SELECT id FROM customers WHERE email = 'alice@example.com';
+
+INSERT INTO policies (id, customer_id, policy_number, type, status, start_date, created_at)
+VALUES (gen_random_uuid(), '&lt;customer_id&gt;', 'POL-001', 'auto', 'active', '2026-01-01', now());
+
+-- copy this id for the next step:
+SELECT id FROM policies WHERE policy_number = 'POL-001';</pre>
+      </div>
+
+      <p class="prose">Worth seeding a second policy too — useful if you want to test creating claims against more than one policy without re-seeding later:</p>
+
+      <div class="code-block">
+        <div class="code-lang">sql — optional second policy, same customer</div>
+        <pre>INSERT INTO policies (id, customer_id, policy_number, type, status, start_date, created_at)
+VALUES (gen_random_uuid(), '&lt;customer_id&gt;', 'POL-002', 'auto', 'active', '2026-01-01', now());
+
+SELECT id FROM policies WHERE policy_number = 'POL-002';</pre>
+      </div>
+
+      <p class="prose"><strong>Test 1 — Create a claim</strong> via Swagger <code>POST /claims/</code>:</p>
 
       <div class="code-block">
         <div class="code-lang">json — request body</div>
         <pre>{
   "policy_id": "&lt;policy_id_from_above&gt;",
   "description": "Water damage to kitchen ceiling",
-  "status": "open"
+  "incident_date": "2026-07-01"
 }</pre>
       </div>
 
-      <p class="prose">Expected: <code>201 Created</code> with <code>id</code> and <code>created_at</code> in the response body.</p>
+      <p class="prose">Expected: <code>201 Created</code> with <code>id</code>, <code>reference_number</code>, <code>status</code>, <code>filed_at</code>, and <code>updated_at</code> all populated in the response body.</p>
 
-      <p class="prose"><strong>Test 2</strong> — <code>GET /claims</code> → array with your claim.</p>
+      <p class="prose"><strong>Test 2</strong> — <code>GET /claims/</code> → array with your claim.</p>
       <p class="prose"><strong>Test 3</strong> — <code>GET /claims/{id}</code> with the UUID from Test 1 → same claim.</p>
       <p class="prose"><strong>Test 4</strong> — <code>GET /claims/00000000-0000-0000-0000-000000000000</code> → <code>404</code>.</p>
 
@@ -985,7 +998,7 @@ SELECT id FROM policies LIMIT 1;</pre>
 
       <div class="code-block">
         <div class="code-lang">bash</div>
-        <pre>psql $DATABASE_URL -c "SELECT id, description, status, created_at FROM claims;"</pre>
+        <pre>psql $DATABASE_URL -c "SELECT id, description, status, reference_number, filed_at FROM claims;"</pre>
       </div>
 
       <div class="callout callout-green">

@@ -1,26 +1,20 @@
-from fastapi.testclient import TestClient
-from app.db import TestSessionDep, SessionDep
-from app.main import app  # Import your FastAPI app instance
+def test_create_claim(client, seeded_db):
+    policy = seeded_db["policy"]
 
-client = TestClient(app)  # Assuming 'app' is your FastAPI instance
+    payload = {
+        "policy_id": str(policy.id),
+        "description": "Broken windshield",
+        "incident_date": "2026-01-15"
+    }
 
-def test_create_claim():
-      
-    app.dependency_overrides[SessionDep] = TestSessionDep  # Override the dependency for testing
-    
-    response = client.post(
-        "/claims/",
-        json={
-            "claimant_name": "John Doe",
-            "claim_amount": 1000.0,
-            "claim_description": "Test claim"
-        }
-    )
+    response = client.post("/claims/", json=payload)
+
     assert response.status_code == 200
-    data = response.json()
-    assert data["claimant_name"] == "John Doe"
-    assert data["claim_amount"] == 1000.0
-    assert data["claim_description"] == "Test claim"
-    assert data["status"] == "Submitted"
-    assert "reference_number" in data
 
+    body = response.json()
+
+    assert body["incident_date"] == "2026-01-15"
+    assert body["policy_id"] == payload["policy_id"]
+    assert body["description"] == "Broken windshield"
+    assert body["status"] == "Submitted"
+    assert body["reference_number"] is not None
