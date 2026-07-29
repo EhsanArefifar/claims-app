@@ -1,0 +1,921 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>claims-app · Phase A · Slice 3 — Tests + Structured Logging</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --font-sans: 'Inter', system-ui, sans-serif;
+      --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+
+      --bg:          #0d0d0f;
+      --nav:         #111114;
+      --surface:     #18181c;
+      --surface-2:   #1f1f24;
+      --pane:        #f8f8f7;
+      --pane-surface:#ffffff;
+
+      --text:        #f0f0ee;
+      --text-muted:  #a0a09a;
+      --text-subtle: #5a5a58;
+
+      --border:      #2a2a30;
+      --nav-border:  #1e1e24;
+
+      --nav-text:        #7a7a78;
+      --nav-text-hover:  #c0c0bc;
+      --nav-text-active: #f0f0ee;
+
+      --accent:      #4a9eff;
+      --accent-soft: rgba(74,158,255,0.10);
+      --accent-glow: rgba(74,158,255,0.20);
+
+      --green:        #4ade80;
+      --green-bg:     rgba(74,222,128,0.08);
+      --green-border: rgba(74,222,128,0.20);
+
+      --amber:        #fbbf24;
+      --amber-bg:     rgba(251,191,36,0.08);
+      --amber-border: rgba(251,191,36,0.20);
+
+      --purple:        #c084fc;
+      --purple-bg:     rgba(192,132,252,0.08);
+      --purple-border: rgba(192,132,252,0.20);
+
+      --radius-sm: 4px;
+      --radius-md: 8px;
+      --radius-lg: 12px;
+    }
+
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: var(--font-sans);
+      background: var(--bg);
+      color: var(--text);
+      display: flex;
+      height: 100vh;
+      overflow: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── SIDEBAR ── */
+    .sidebar {
+      width: 250px;
+      flex-shrink: 0;
+      background: var(--nav);
+      border-right: 1px solid var(--nav-border);
+      display: flex;
+      flex-direction: column;
+      padding: 24px 0 0;
+    }
+    .sidebar-logo { padding: 0 20px 20px; border-bottom: 1px solid var(--nav-border); margin-bottom: 10px; }
+    .logo-mark { width: 32px; height: 32px; border-radius: 8px; background: var(--accent); display: grid; place-items: center; margin-bottom: 10px; }
+    .logo-mark svg { width: 18px; height: 18px; stroke: #0d0d0f; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+    .logo-text { font-weight: 700; font-size: 15px; color: var(--text); }
+    .logo-sub { font-family: var(--font-mono); font-size: 10.5px; color: var(--text-subtle); text-transform: uppercase; letter-spacing: .08em; margin-top: 3px; }
+
+    .sidebar-nav { flex: 1; overflow-y: auto; padding: 4px 12px 12px; }
+    .sidebar-nav::-webkit-scrollbar { width: 6px; }
+    .sidebar-nav::-webkit-scrollbar-thumb { background: var(--nav-border); border-radius: 3px; }
+    .nav-group-label { font-family: var(--font-mono); font-size: 10px; letter-spacing: .12em; text-transform: uppercase; color: var(--text-subtle); padding: 16px 8px 6px; }
+    .nav-item {
+      display: block; width: 100%; text-align: left; background: none; border: none;
+      color: var(--nav-text); font-family: var(--font-sans); font-size: 13px;
+      padding: 8px 12px; border-radius: 6px; cursor: pointer; margin-bottom: 2px;
+      position: relative; transition: background 150ms ease, color 150ms ease;
+    }
+    .nav-item:hover { color: var(--nav-text-hover); background: rgba(255,255,255,0.03); }
+    .nav-item.active { color: var(--nav-text-active); background: var(--accent-soft); }
+    .nav-item.active::before { content: ''; position: absolute; left: 0; top: 6px; bottom: 6px; width: 3px; border-radius: 2px; background: var(--accent); }
+
+    .sidebar-foot { padding: 14px 20px; font-family: var(--font-mono); font-size: 10px; color: var(--text-subtle); border-top: 1px solid var(--nav-border); }
+
+    /* ── CONTENT ── */
+    .content { flex: 1; overflow-y: auto; background: var(--pane); color: #1a1a1a; }
+    .tab-pane { display: none; }
+    .tab-pane.active { display: block; }
+
+    .pane-header { position: sticky; top: 0; background: var(--pane-surface); border-bottom: 1px solid #e5e5e0; padding: 28px 40px; z-index: 5; }
+    .pane-eyebrow { font-family: var(--font-mono); font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--accent); font-weight: 600; }
+    .pane-title { font-size: 24px; font-weight: 700; color: #0a0a0a; margin-top: 6px; letter-spacing: -.01em; }
+    .pane-subtitle { font-size: 14px; color: #6b6b66; margin-top: 6px; max-width: 62ch; line-height: 1.5; }
+
+    .pane-body { padding: 32px 40px 90px; max-width: 820px; }
+    .section { margin-bottom: 38px; }
+    .section-label { font-family: var(--font-mono); font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: #9a9a94; border-bottom: 1px solid #e5e5e0; padding-bottom: 8px; margin-bottom: 16px; }
+
+    .prose { font-size: 14px; line-height: 1.75; color: #3a3a36; margin-bottom: 12px; }
+    .prose strong { color: #0a0a0a; font-weight: 600; }
+    .prose code, .ic { font-family: var(--font-mono); font-size: 12.5px; background: #f0f0ec; border: 1px solid #e0e0da; border-radius: 3px; padding: 1px 5px; color: #1a1a18; }
+
+    .callout { display: flex; gap: 12px; padding: 14px 16px; border-radius: 10px; margin-bottom: 14px; font-size: 13.5px; line-height: 1.6; }
+    .callout-icon { flex-shrink: 0; font-size: 14px; margin-top: 1px; }
+    .callout-accent { background: var(--accent-soft); border: 1px solid rgba(74,158,255,0.25); color: #1a3a5c; }
+    .callout-green  { background: var(--green-bg);  border: 1px solid var(--green-border);  color: #1a4a2e; }
+    .callout-amber  { background: var(--amber-bg);  border: 1px solid var(--amber-border);  color: #5c3a00; }
+    .callout-purple { background: var(--purple-bg); border: 1px solid var(--purple-border); color: #3a1a5c; }
+
+    .checklist { list-style: none; display: flex; flex-direction: column; gap: 9px; }
+    .check-item { display: flex; align-items: flex-start; gap: 10px; font-size: 13.5px; color: #3a3a36; }
+    .check-box { width: 16px; height: 16px; border-radius: 4px; border: 1.5px solid #c8c8c2; flex-shrink: 0; margin-top: 1px; display: grid; place-items: center; }
+    .check-box.done { background: var(--green); border-color: var(--green); }
+    .check-box.done::after { content: '✓'; font-size: 10px; color: #0a2015; font-weight: 700; }
+
+    table { width: 100%; border-collapse: collapse; font-size: 13px; margin-bottom: 8px; }
+    th { font-family: var(--font-mono); font-size: 10.5px; text-transform: uppercase; letter-spacing: .06em; color: #8a8a84; text-align: left; padding: 8px 10px; border-bottom: 1px solid #e0e0da; }
+    td { padding: 10px; border-bottom: 1px solid #ececE6; color: #3a3a36; vertical-align: top; }
+
+    .tags { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px; }
+    .tag { font-family: var(--font-mono); font-size: 10.5px; padding: 3px 8px; border-radius: 4px; background: #f0f0ec; border: 1px solid #e0e0da; color: #5a5a55; }
+    .tag-accent { background: var(--accent-soft); color: #1a3a5c; border-color: rgba(74,158,255,.25); }
+    .tag-green  { background: var(--green-bg);  color: #1a4a2e; border-color: var(--green-border); }
+    .tag-amber  { background: var(--amber-bg);  color: #5c3a00; border-color: var(--amber-border); }
+
+    .field-note { border: 1px solid #e5e5e0; border-radius: 10px; padding: 16px 18px; margin-bottom: 14px; background: #fff; }
+    .field-note-title { font-weight: 600; font-size: 14px; color: #0a0a0a; margin-bottom: 8px; display: flex; align-items: center; gap: 10px; }
+    .field-note-num { font-family: var(--font-mono); font-size: 11px; color: var(--accent); background: var(--accent-soft); width: 22px; height: 22px; border-radius: 50%; display: grid; place-items: center; flex-shrink: 0; }
+
+    .architecture-chain { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 14px 0 6px; font-family: var(--font-mono); font-size: 12px; }
+    .chain-node { padding: 6px 12px; border-radius: 6px; background: var(--surface); color: var(--text); border: 1px solid var(--border); }
+    .chain-arrow { color: var(--text-subtle); }
+
+    .code-label { font-family: var(--font-mono); font-size: 10.5px; text-transform: uppercase; letter-spacing: .08em; color: #9a9a94; margin: 18px 0 6px; }
+    .code-block { background: #14141a; border: 1px solid #26262e; border-radius: 8px; padding: 14px 16px; margin: 0 0 18px; overflow-x: auto; }
+    .code-block pre { margin: 0; }
+    .code-block code { font-family: var(--font-mono); font-size: 12px; line-height: 1.65; color: #d8d8d4; white-space: pre; }
+    .cmd-block { background: #0d0d0f; border: 1px solid #26262e; border-radius: 8px; padding: 12px 14px; margin: 0 0 18px; font-family: var(--font-mono); font-size: 12.5px; color: #8ef0a8; overflow-x: auto; white-space: pre; }
+    .cmd-block .cmt { color: #6a6a66; }
+    .out-block { background: #0d0d0f; border: 1px solid #26262e; border-radius: 8px; padding: 12px 14px; margin: 0 0 18px; font-family: var(--font-mono); font-size: 12px; color: #a0a09a; overflow-x: auto; white-space: pre; line-height: 1.6; }
+
+    @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+  </style>
+</head>
+<body>
+
+  <nav class="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-mark"><svg viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg></div>
+      <div class="logo-text">claims-app</div>
+      <div class="logo-sub">Phase A · Slice 3</div>
+    </div>
+
+    <div class="sidebar-nav">
+      <a href="index.html" class="nav-item" style="display:flex;align-items:center;gap:6px;text-decoration:none;color:var(--accent);margin-bottom:4px;">← Back to main</a>
+
+      <div class="nav-group-label">Overview</div>
+      <button class="nav-item active" onclick="show('overview', this)">Scope &amp; decisions</button>
+
+      <div class="nav-group-label">Environment</div>
+      <button class="nav-item" onclick="show('env-setup', this)">Test DB &amp; env vars</button>
+
+      <div class="nav-group-label">Part 1 · Testing</div>
+      <button class="nav-item" onclick="show('test-setup', this)">Fixture architecture</button>
+      <button class="nav-item" onclick="show('test-cases', this)">Test cases</button>
+
+      <div class="nav-group-label">Part 2 · Logging</div>
+      <button class="nav-item" onclick="show('logging', this)">Structured logging</button>
+
+      <div class="nav-group-label">Wrap-up</div>
+      <button class="nav-item" onclick="show('done', this)">Done ✓</button>
+
+      <div class="nav-group-label">Field notes</div>
+      <button class="nav-item" onclick="show('fn-pytest', this)">pytest discovery &amp; fixtures</button>
+      <button class="nav-item" onclick="show('fn-tx', this)">Transactions &amp; overrides</button>
+      <button class="nav-item" onclick="show('fn-payload', this)">UUIDs &amp; payload traps</button>
+      <button class="nav-item" onclick="show('fn-logging', this)">Logging internals</button>
+      <button class="nav-item" onclick="show('fn-house', this)">Housekeeping</button>
+
+      <div class="nav-group-label">Next</div>
+      <button class="nav-item" onclick="show('next', this)">Slice 4 · Auth</button>
+    </div>
+
+    <div class="sidebar-foot">v1 · Jul 2026 · claims-app</div>
+  </nav>
+
+  <main class="content">
+
+    <!-- ═══ OVERVIEW ═══ -->
+    <div class="tab-pane active" id="tab-overview">
+      <div class="pane-header">
+        <div class="pane-eyebrow">Slice 3</div>
+        <div class="pane-title">Tests + Structured Logging</div>
+        <div class="pane-subtitle">pytest coverage on the create/read claim path from Slice 2, plus structured logging on every request/response cycle.</div>
+      </div>
+      <div class="pane-body">
+        <div class="section">
+          <div class="section-label">Scope</div>
+          <p class="prose">Six pytest cases covering <code>POST /claims</code> (success + validation failure), <code>GET /claims/{id}</code> (found + not found), and <code>GET /claims</code> (list) — plus a structlog-based middleware logging every request's method, path, status code, and duration.</p>
+          <p class="prose">Parked, unchanged from ADR-003: status enum strategy, reference number strategy, Customer/Policy CRUD APIs.</p>
+        </div>
+
+        <div class="section">
+          <div class="section-label">Decisions this slice (→ ADR-004)</div>
+          <div class="callout callout-accent">
+            <span class="callout-icon">◆</span>
+            <div><strong>Test isolation:</strong> a separate <code>claims_test</code> database in the same Postgres sidecar, chosen over transactional rollback — avoids a savepoint/commit conflict since the app's routes already call <code>session.commit()</code> themselves.</div>
+          </div>
+          <div class="callout callout-accent">
+            <span class="callout-icon">◆</span>
+            <div><strong>Schema setup:</strong> <code>Base.metadata.create_all()</code> against the test engine, rather than running real Alembic migrations. Testing the migrations themselves is a separate, later concern.</div>
+          </div>
+          <div class="callout callout-accent">
+            <span class="callout-icon">◆</span>
+            <div><strong>Per-test isolation:</strong> <code>TRUNCATE ... CASCADE</code> on every table before each test, rather than a wrapped transaction — simpler given the isolation choice above.</div>
+          </div>
+          <div class="callout callout-accent">
+            <span class="callout-icon">◆</span>
+            <div><strong>Logging:</strong> structlog with <code>JSONRenderer</code>, kept as-is rather than swapping to <code>ConsoleRenderer</code> for dev — matches what a real log aggregator wants, and read fine raw during debugging.</div>
+          </div>
+          <div class="callout callout-amber">
+            <span class="callout-icon">▲</span>
+            <div><strong>Open — stdlib log integration:</strong> uvicorn's and SQLAlchemy's own logs aren't routed through the structlog JSON pipeline yet; they print as plain text alongside it. Real integration needs <code>structlog.stdlib.ProcessorFormatter</code>. Deferred.</div>
+          </div>
+          <div class="callout callout-amber">
+            <span class="callout-icon">▲</span>
+            <div><strong>Open — no custom exception handler:</strong> a genuine DB error (e.g. the FK violation below) still surfaces as a bare 500, and prints twice — once as the app's own structured <code>unhandled_exception</code> log, once as Starlette's default plain-text traceback. A proper <code>@app.exception_handler</code> is future work.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ ENVIRONMENT SETUP ═══ -->
+    <div class="tab-pane" id="tab-env-setup">
+      <div class="pane-header">
+        <div class="pane-eyebrow">Environment</div>
+        <div class="pane-title">Test database &amp; env vars</div>
+        <div class="pane-subtitle">From a clean devcontainer, exactly what to run to get claims_test up and wired in.</div>
+      </div>
+      <div class="pane-body">
+
+        <div class="section">
+          <div class="section-label">1 · Create the test database</div>
+          <p class="prose">Same Postgres sidecar as the dev DB — connect to the default <code>postgres</code> maintenance database and create a second one alongside <code>claimsdb</code>.</p>
+          <div class="code-label">bash</div>
+          <div class="cmd-block"><span class="cmt"># create the database</span>
+psql "postgresql://claims:claims@db:5432/postgres" -c 'CREATE DATABASE claims_test;'
+
+<span class="cmt"># confirm it exists</span>
+psql "postgresql://claims:claims@db:5432/postgres" -c '\l'</div>
+        </div>
+
+        <div class="section">
+          <div class="section-label">2 · Set TEST_DATABASE_URL</div>
+          <p class="prose">Wherever <code>DATABASE_URL</code> is already defined for the devcontainer (the compose file's <code>environment:</code> block) — add <code>TEST_DATABASE_URL</code> right alongside it. A <code>.env.example</code> entry alone does nothing; the app only reads real environment variables.</p>
+          <div class="code-label">environment block</div>
+          <div class="code-block"><code>environment:
+  - DATABASE_URL=postgresql://claims:claims@db:5432/claimsdb
+  - TEST_DATABASE_URL=postgresql://claims:claims@db:5432/claims_test</code></div>
+          <div class="callout callout-amber">
+            <span class="callout-icon">▲</span>
+            <div>Env var changes need a container <strong>rebuild</strong>, not just a save — "Rebuild Container" from the Codespaces/devcontainer command palette, or a fresh <code>docker compose up</code> if working outside Codespaces.</div>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="section-label">3 · Verify connectivity</div>
+          <div class="code-label">bash</div>
+          <div class="cmd-block"><span class="cmt"># from inside the devcontainer, after rebuild</span>
+echo $TEST_DATABASE_URL
+
+<span class="cmt"># should connect with no error and return an empty table list —</span>
+<span class="cmt"># claims_test has no tables yet until pytest creates them</span>
+psql "$TEST_DATABASE_URL" -c '\dt'</div>
+        </div>
+
+        <div class="section">
+          <div class="section-label">A note on checking tables manually</div>
+          <p class="prose">Running <code>\dt</code> against <code>claims_test</code> right after a <code>pytest</code> run will still show no tables — that's expected, not a bug. The <code>create_tables</code> fixture is session-scoped: it builds the schema when the test session starts and calls <code>drop_all()</code> when it ends, so outside of an active test run the database is intentionally empty.</p>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ═══ TEST SETUP ═══ -->
+    <div class="tab-pane" id="tab-test-setup">
+      <div class="pane-header">
+        <div class="pane-eyebrow">Part 1 · Testing</div>
+        <div class="pane-title">Fixture architecture</div>
+        <div class="pane-subtitle">Four composed fixtures in conftest.py — each with one job, each requesting the one before it.</div>
+      </div>
+      <div class="pane-body">
+        <div class="section">
+          <div class="section-label">The chain</div>
+          <div class="architecture-chain">
+            <span class="chain-node">create_tables</span><span class="chain-arrow">→</span>
+            <span class="chain-node">db_session</span><span class="chain-arrow">→</span>
+            <span class="chain-node">seeded_db</span><span class="chain-arrow">→</span>
+            <span class="chain-node">client</span>
+          </div>
+          <p class="prose"><strong>create_tables</strong> — session-scoped, requested by <code>db_session</code>. Runs once for the whole test session: <code>Base.metadata.create_all(engine)</code> against the <code>claims_test</code> engine, <code>drop_all()</code> on teardown.</p>
+          <p class="prose"><strong>db_session</strong> — function-scoped. Opens a plain session directly on the test engine, truncates every table (<code>TRUNCATE ... RESTART IDENTITY CASCADE</code>) before yielding, closes the session after. No connection/transaction wrapper — an earlier version tried wrapping the session in its own transaction for rollback-based cleanup, but that reintroduced the savepoint/commit conflict the separate-DB choice was meant to avoid (see Field Notes). Truncate-before-yield does the isolation work on its own.</p>
+          <p class="prose"><strong>seeded_db</strong> — function-scoped, depends on <code>db_session</code>. Inserts a real <code>Customer</code> and a <code>Policy</code> referencing it, commits, and returns both objects — so tests needing a valid <code>policy_id</code> pull it off a real row instead of hardcoding a UUID.</p>
+          <p class="prose"><strong>client</strong> — function-scoped, depends on <code>db_session</code>. Overrides <code>get_db</code> to yield the test session, wraps the app in <code>TestClient</code>, clears <code>app.dependency_overrides</code> on teardown.</p>
+          <p class="prose"><strong>client_no_db</strong> — a second, simpler client fixture with no DB dependency at all, for tests that never reach the database layer (health check, Pydantic validation failures).</p>
+        </div>
+        <div class="section">
+          <div class="section-label">Database</div>
+          <p class="prose">A second Postgres database, <code>claims_test</code>, created in the same sidecar as the dev DB. See the <strong>Environment</strong> page for the exact commands.</p>
+        </div>
+
+        <div class="section">
+          <div class="section-label">Install</div>
+          <div class="code-label">bash</div>
+          <div class="cmd-block">pip install pytest httpx
+pip freeze &gt; requirements.txt</div>
+        </div>
+
+        <div class="section">
+          <div class="section-label">Full source — conftest.py</div>
+          <div class="code-block"><code>import pytest
+import os
+import uuid
+from datetime import datetime
+from sqlalchemy import create_engine, text
+from sqlalchemy.orm import sessionmaker
+from fastapi.testclient import TestClient
+
+from app.main import app
+from app.db import get_db
+from app.models import Base, Customer, Policy
+
+TEST_DATABASE_URL = os.environ["TEST_DATABASE_URL"]
+
+engine = create_engine(TEST_DATABASE_URL)
+TestingSessionLocal = sessionmaker(
+    bind=engine,
+    autoflush=False,
+    autocommit=False,
+)
+
+
+# Create schema once — only runs when a test actually requests db_session
+@pytest.fixture(scope="session")
+def create_tables():
+    Base.metadata.create_all(engine)
+    yield
+    Base.metadata.drop_all(engine)
+
+
+# Clean database before every test
+@pytest.fixture()
+def db_session(create_tables):
+    session = TestingSessionLocal(bind=engine)
+
+    for table in reversed(Base.metadata.sorted_tables):
+        session.execute(
+            text(
+                f'TRUNCATE TABLE "{table.name}" RESTART IDENTITY CASCADE'
+            )
+        )
+    session.commit()
+
+    yield session
+
+    session.close()
+
+
+# Seed required data
+@pytest.fixture()
+def seeded_db(db_session):
+    customer = Customer(
+        id=uuid.uuid4(),
+        full_name="Doe",
+        email="Doe@example.com",
+        created_at=datetime.now()
+    )
+    db_session.add(customer)
+    db_session.flush()
+
+    policy = Policy(
+        id=uuid.uuid4(),
+        customer_id=customer.id,
+        policy_number="POL-1001",
+        type="auto",
+        status="Submitted",
+        start_date="2026-01-01",
+        created_at=datetime.now()
+    )
+    db_session.add(policy)
+    db_session.commit()
+
+    return {
+        "customer": customer,
+        "policy": policy,
+    }
+
+
+@pytest.fixture()
+def client(db_session):
+    def override_session():
+        yield db_session
+
+    app.dependency_overrides[get_db] = override_session
+
+    with TestClient(app) as c:
+        yield c
+
+    app.dependency_overrides.clear()
+
+
+@pytest.fixture()
+def client_no_db():
+    """TestClient with no DB dependency — for tests that are rejected by Pydantic
+    before the database layer runs (e.g. missing required fields)."""
+    with TestClient(app) as c:
+        yield c</code></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ TEST CASES ═══ -->
+    <div class="tab-pane" id="tab-test-cases">
+      <div class="pane-header">
+        <div class="pane-eyebrow">Part 1 · Testing</div>
+        <div class="pane-title">Test cases</div>
+        <div class="pane-subtitle">Six cases, all in test_claim.py — six passed, zero skipped.</div>
+      </div>
+      <div class="pane-body">
+        <div class="section">
+          <table>
+            <tr><th>Test</th><th>Fixtures</th><th>Proves</th></tr>
+            <tr><td><span class="ic">test_health</span></td><td>client_no_db</td><td><code>GET /health</code> → 200</td></tr>
+            <tr><td><span class="ic">test_create_claim_missing_required_field_returns_422</span></td><td>client_no_db</td><td>omitting <code>incident_date</code> is rejected by Pydantic before the DB layer runs</td></tr>
+            <tr><td><span class="ic">test_create_claim</span></td><td>client, seeded_db</td><td><code>POST /claims</code> with a real policy_id → 201, fields match</td></tr>
+            <tr><td><span class="ic">test_get_claim_exists</span></td><td>client, seeded_db</td><td><code>GET /claims/{id}</code> for a claim just created → 200, fields match</td></tr>
+            <tr><td><span class="ic">test_get_claim_not_found</span></td><td>client</td><td><code>GET /claims/{random-uuid}</code> → 404, no seed data needed</td></tr>
+            <tr><td><span class="ic">test_list_claims</span></td><td>client, seeded_db</td><td><code>GET /claims</code> returns exactly the claims this test created — checked via exact set equality, not subset</td></tr>
+          </table>
+        </div>
+        <div class="section">
+          <div class="section-label">Run</div>
+          <div class="code-label">bash</div>
+          <div class="cmd-block">pytest -v</div>
+          <div class="code-label">output</div>
+          <div class="out-block">collected 6 items
+
+app/tests/test_claim.py::test_health PASSED                            [ 16%]
+app/tests/test_claim.py::test_create_claim_missing_required_field_returns_422 PASSED [ 33%]
+app/tests/test_claim.py::test_create_claim PASSED                      [ 50%]
+app/tests/test_claim.py::test_get_claim_exists PASSED                  [ 66%]
+app/tests/test_claim.py::test_get_claim_not_found PASSED               [ 83%]
+app/tests/test_claim.py::test_list_claims PASSED                       [100%]
+
+6 passed, 8 warnings in 0.43s</div>
+          <div class="callout callout-green">
+            <span class="callout-icon">✓</span>
+            <div>Warnings are all the pre-existing <code>utcnow()</code> deprecation (see Housekeeping) — not a test failure.</div>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="section-label">Full source — test_claim.py</div>
+          <div class="code-block"><code>def test_health(client_no_db):
+    response = client_no_db.get("/health")
+    assert response.status_code == 200
+    assert response.json()["status"] == "ok!"
+
+
+def test_create_claim_missing_required_field_returns_422(client_no_db):
+    # incident_date is required on ClaimCreate (no default), omitting it
+    # is caught by Pydantic before the DB layer ever runs — no seeded_db needed
+    payload = {
+        "policy_id": "00000000-0000-0000-0000-000000000001",
+        "description": "Broken windshield",
+        # incident_date intentionally omitted
+    }
+    response = client_no_db.post("/claims/", json=payload)
+    assert response.status_code == 422
+
+
+def test_create_claim(client, seeded_db):
+    policy = seeded_db["policy"]
+
+    payload = {
+        "policy_id": str(policy.id),
+        "description": "Broken windshield",
+        "incident_date": "2026-01-15"
+    }
+
+    response = client.post("/claims/", json=payload)
+
+    assert response.status_code == 200
+
+    body = response.json()
+
+    assert body["incident_date"] == "2026-01-15"
+    assert body["policy_id"] == payload["policy_id"]
+    assert body["description"] == "Broken windshield"
+    assert body["status"] == "Submitted"
+    assert body["reference_number"] is not None
+
+
+def test_get_claim_exists(client, seeded_db):
+    policy = seeded_db["policy"]
+
+    # Create a claim first so we have a known ID to fetch
+    payload = {
+        "policy_id": str(policy.id),
+        "description": "Cracked bumper",
+        "incident_date": "2026-03-10",
+    }
+    post_response = client.post("/claims/", json=payload)
+    assert post_response.status_code == 200, f"Setup POST failed: {post_response.text}"
+    created = post_response.json()
+
+    response = client.get(f"/claims/{created['id']}")
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["id"] == created["id"]
+    assert body["policy_id"] == str(policy.id)
+    assert body["description"] == "Cracked bumper"
+    assert body["incident_date"] == "2026-03-10"
+    assert body["status"] == "Submitted"
+
+
+def test_get_claim_not_found(client):
+    random_id = "00000000-0000-0000-0000-000000000099"
+    response = client.get(f"/claims/{random_id}")
+    assert response.status_code == 404
+
+
+def test_list_claims(client, seeded_db):
+    policy = seeded_db["policy"]
+
+    # Create two claims
+    payloads = [
+        {"policy_id": str(policy.id), "description": "Flat tyre",    "incident_date": "2026-04-01"},
+        {"policy_id": str(policy.id), "description": "Stolen radio", "incident_date": "2026-04-02"},
+    ]
+    created_ids = set()
+    for p in payloads:
+        r = client.post("/claims/", json=p)
+        assert r.status_code == 200, f"Setup POST failed: {r.text}"
+        created_ids.add(r.json()["id"])
+
+    response = client.get("/claims/")
+
+    assert response.status_code == 200
+    returned_ids = {c["id"] for c in response.json()}
+    assert returned_ids == created_ids</code></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ LOGGING ═══ -->
+    <div class="tab-pane" id="tab-logging">
+      <div class="pane-header">
+        <div class="pane-eyebrow">Part 2 · Logging</div>
+        <div class="pane-title">Structured logging</div>
+        <div class="pane-subtitle">structlog wired in as middleware — every request logged, without touching route code.</div>
+      </div>
+      <div class="pane-body">
+        <div class="section">
+          <div class="section-label">Pipeline (logging_config.py)</div>
+          <p class="prose">Six processors, in order: <code>merge_contextvars</code> → <code>add_log_level</code> → <code>TimeStamper</code> (ISO, UTC) → <code>StackInfoRenderer</code> → <code>format_exc_info</code> → <code>JSONRenderer</code>. Logger factory is <code>PrintLoggerFactory</code> — structlog calls <code>print()</code> directly and never touches Python's stdlib <code>logging</code> module.</p>
+        </div>
+        <div class="section">
+          <div class="section-label">Middleware (middleware.py)</div>
+          <p class="prose">A <code>BaseHTTPMiddleware</code> subclass. Before calling the next handler: clears any leftover context, binds a fresh <code>request_id</code> (uuid4) plus <code>method</code> and <code>path</code> via <code>structlog.contextvars</code>.</p>
+          <p class="prose"><strong>Normal path</strong> — including FastAPI's own 4xx/5xx responses. <code>ExceptionMiddleware</code> sits inside this middleware in the stack, so a 404 or 422 is already a plain <code>Response</code> by the time <code>call_next</code> returns — it logs <code>http_request</code> with the real status code and duration. Confirmed against a live 404.</p>
+          <p class="prose"><strong>Crash path</strong> — a genuine unhandled exception. Logs <code>unhandled_exception</code> at error level with duration and full traceback via <code>log.exception(...)</code>, then re-raises. Confirmed against a live FK violation.</p>
+        </div>
+        <div class="section">
+          <div class="section-label">Sample output</div>
+          <table>
+            <tr><th>Request</th><th>Event</th><th>Fields</th></tr>
+            <tr><td>GET /claims/{missing-id}</td><td>http_request</td><td>status_code: 404, duration_ms: 5.42</td></tr>
+            <tr><td>POST /claims (bad policy_id)</td><td>unhandled_exception</td><td>level: error, duration_ms: 87.43, full traceback</td></tr>
+            <tr><td>GET /claims</td><td>http_request</td><td>status_code: 200, duration_ms: 3.87</td></tr>
+          </table>
+          <div class="code-label">real captured log lines</div>
+          <div class="out-block">{"status_code": 404, "duration_ms": 5.42, "event": "http_request", "request_id": "a449d99e-ff1e-4a6d-b258-9f1e37eb9c1c", "path": "/claims/3fa85f64-5717-4562-b3fc-2c963f66afa6", "method": "GET", "level": "info", "timestamp": "2026-07-29T09:16:27.224810Z"}
+
+{"duration_ms": 87.43, "event": "unhandled_exception", "request_id": "a2aab2f0-fce9-40fb-b425-84629682ffd0", "path": "/claims/", "method": "POST", "level": "error", "timestamp": "2026-07-29T09:16:47.759285Z", "exception": "Traceback (most recent call last): ... ForeignKeyViolation ..."}
+
+{"status_code": 200, "duration_ms": 3.87, "event": "http_request", "request_id": "0eddc71b-e2b3-442d-9c8f-a17d125ba9f9", "path": "/claims/", "method": "GET", "level": "info", "timestamp": "2026-07-29T09:17:30.419575Z"}</div>
+        </div>
+
+        <div class="section">
+          <div class="section-label">Verify manually</div>
+          <div class="code-label">bash</div>
+          <div class="cmd-block"><span class="cmt"># run the app (no separate uvicorn process needed for pytest — this is for manual/log checking only)</span>
+uvicorn app.main:app --reload
+
+<span class="cmt"># in another terminal, or via Swagger UI at /docs:</span>
+curl http://localhost:8000/health
+curl http://localhost:8000/claims/
+curl http://localhost:8000/claims/00000000-0000-0000-0000-000000000000</div>
+        </div>
+
+        <div class="section">
+          <div class="section-label">Install</div>
+          <div class="code-label">bash</div>
+          <div class="cmd-block">pip install structlog
+pip freeze &gt; requirements.txt</div>
+        </div>
+
+        <div class="section">
+          <div class="section-label">Full source — logging_config.py</div>
+          <div class="code-block"><code>import logging
+import structlog
+
+
+def configure_logging() -&gt; None:
+    """
+    Configure structlog for the application.
+
+    Pipeline explanation:
+    - merge_contextvars  : merges any context bound via structlog.contextvars
+                           (used in the middleware to attach request_id, path, etc.)
+    - add_log_level      : adds the "level" key (info, warning, error…)
+    - TimeStamper        : adds "timestamp" in ISO-8601 format (UTC)
+    - StackInfoRenderer  : renders stack_info if present
+    - format_exc_info    : renders exception info into the "exception" key
+    - JSONRenderer       : serialises the whole event dict to a JSON string
+                           → one JSON object per line, easy to parse / ship to a log aggregator
+    """
+
+    # Configure stdlib logging independently of structlog.
+    # structlog uses PrintLoggerFactory (calls print() directly) and never
+    # touches stdlib at all. basicConfig() only affects stdlib loggers such
+    # as uvicorn's access log or SQLAlchemy's query log — setting the format
+    # to "%(message)s" strips uvicorn's default prefix but leaves its lines
+    # as plain text, NOT routed through the JSON pipeline above.
+    # Net result: app logs → one-line JSON, uvicorn logs → plain text,
+    # both in the same terminal. Real integration (ProcessorFormatter on
+    # stdlib handlers) is a follow-up — see Open Questions in ADR-004.
+    logging.basicConfig(
+        format="%(message)s",
+        level=logging.INFO,
+    )
+
+    structlog.configure(
+        processors=[
+            structlog.contextvars.merge_contextvars,
+            structlog.stdlib.add_log_level,
+            structlog.processors.TimeStamper(fmt="iso", utc=True),
+            structlog.processors.StackInfoRenderer(),
+            structlog.processors.format_exc_info,
+            structlog.processors.JSONRenderer(),
+        ],
+        wrapper_class=structlog.make_filtering_bound_logger(logging.INFO),
+        context_class=dict,
+        logger_factory=structlog.PrintLoggerFactory(),
+    )</code></div>
+        </div>
+
+        <div class="section">
+          <div class="section-label">Full source — middleware.py</div>
+          <div class="code-block"><code>import time
+import uuid
+
+import structlog
+from starlette.middleware.base import BaseHTTPMiddleware
+from starlette.requests import Request
+from starlette.responses import Response
+
+log = structlog.get_logger()
+
+
+class RequestLoggingMiddleware(BaseHTTPMiddleware):
+    """
+    Logs every HTTP request with method, path, status code, and duration.
+
+    Normal path (including FastAPI's own 4xx/5xx responses):
+       FastAPI's ExceptionMiddleware sits *inside* this middleware, so a 404
+       from GET /claims/{id} or a 422 from bad input is already converted to a
+       Response by the time call_next returns here. It reaches the log.info
+       line with the correct status code and duration — the except block is
+       never entered.
+
+    Unhandled exception path (a genuine crash that bypasses FastAPI's handlers):
+       The except block fires, computes duration_ms so timing is still captured,
+       logs with log.exception (which includes the traceback), then re-raises so
+       Starlette's ServerErrorMiddleware can return a 500.
+    """
+
+    async def dispatch(self, request: Request, call_next) -&gt; Response:
+        # Fresh context for every request
+        structlog.contextvars.clear_contextvars()
+        structlog.contextvars.bind_contextvars(
+            request_id=str(uuid.uuid4()),
+            method=request.method,
+            path=request.url.path,
+        )
+
+        start = time.perf_counter()
+
+        try:
+            response: Response = await call_next(request)
+        except Exception:
+            # Log unhandled exceptions with duration before re-raising
+            duration_ms = round((time.perf_counter() - start) * 1000, 2)
+            log.exception("unhandled_exception", duration_ms=duration_ms)
+            structlog.contextvars.clear_contextvars()
+            raise
+
+        # Normal path: log success with duration
+        duration_ms = round((time.perf_counter() - start) * 1000, 2)
+        log.info(
+            "http_request",
+            status_code=response.status_code,
+            duration_ms=duration_ms,
+        )
+
+        # Clean up so context doesn't bleed into background tasks
+        structlog.contextvars.clear_contextvars()
+
+        return response</code></div>
+        </div>
+
+        <div class="section">
+          <div class="section-label">Wiring — main.py</div>
+          <div class="code-block"><code>from fastapi import FastAPI
+
+from app.logging_config import configure_logging
+from app.middleware import RequestLoggingMiddleware
+from app.routers import claims
+
+# Configure structlog before anything else runs
+configure_logging()
+
+app = FastAPI(title="Claims App")
+
+# Middleware is applied outside-in: this wraps every request, including /health
+app.add_middleware(RequestLoggingMiddleware)
+
+app.include_router(claims.router)
+
+
+@app.get("/health")
+def health():
+    return {"status": "ok!"}</code></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ DONE ═══ -->
+    <div class="tab-pane" id="tab-done">
+      <div class="pane-header">
+        <div class="pane-eyebrow">Wrap-up</div>
+        <div class="pane-title">Done ✓</div>
+        <div class="pane-subtitle">Slice 3 checklist.</div>
+      </div>
+      <div class="pane-body">
+        <div class="section">
+          <ul class="checklist">
+            <li class="check-item"><span class="check-box done"></span> claims_test database created</li>
+            <li class="check-item"><span class="check-box done"></span> get_db override wired via app.dependency_overrides</li>
+            <li class="check-item"><span class="check-box done"></span> Schema created in test DB via create_all()</li>
+            <li class="check-item"><span class="check-box done"></span> Truncate-based isolation working</li>
+            <li class="check-item"><span class="check-box done"></span> Customer/Policy seed fixture in place</li>
+            <li class="check-item"><span class="check-box done"></span> All 6 test cases passing</li>
+            <li class="check-item"><span class="check-box done"></span> pytest -v green in terminal</li>
+            <li class="check-item"><span class="check-box done"></span> Structured logging middleware in place</li>
+            <li class="check-item"><span class="check-box done"></span> Log lines confirmed for health / success / 404 / crash</li>
+            <li class="check-item"><span class="check-box"></span> Committed</li>
+            <li class="check-item"><span class="check-box"></span> ADR-004 written</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ FIELD NOTES ═══ -->
+    <div class="tab-pane" id="tab-fn-pytest">
+      <div class="pane-header">
+        <div class="pane-eyebrow">Field notes</div>
+        <div class="pane-title">pytest discovery &amp; fixtures</div>
+        <div class="pane-subtitle">Three real bugs, one theme: names matter more than they look like they should.</div>
+      </div>
+      <div class="pane-body">
+        <div class="field-note">
+          <div class="field-note-title"><span class="field-note-num">1</span> Discovery pattern</div>
+          <p class="prose">A file named <code>test.py</code> was silently never collected. pytest's default discovery only matches <code>test_*.py</code> or <code>*_test.py</code> — an exact match on the word "test" doesn't qualify. Renamed to <code>test_main.py</code>, immediately collected.</p>
+        </div>
+        <div class="field-note">
+          <div class="field-note-title"><span class="field-note-num">2</span> Annotated alias as a dict key</div>
+          <p class="prose"><code>app.dependency_overrides[SessionDep] = TestSessionDep</code>, where both sides were <code>Annotated[Session, Depends(...)]</code> type aliases. This threw no error — <code>dependency_overrides</code> is a plain dict, and Python happily accepts any object as a key. But FastAPI looks up overrides by the actual callable passed to <code>Depends(...)</code> (<code>get_db</code>), not by an annotated type. The override silently matched nothing; the route would have hit the real dev DB. Fixed by using <code>get_db</code> itself as the key.</p>
+        </div>
+        <div class="field-note">
+          <div class="field-note-title"><span class="field-note-num">3</span> Fixture-as-parameter footgun</div>
+          <p class="prose">A generator function <code>get_test_db</code> was wrapped in <code>@pytest.fixture</code>, then requested by name as a parameter inside a second fixture. pytest resolved that parameter to whatever <code>get_test_db</code> <em>yielded</em> (a <code>Session</code> instance) — not the function object itself. The override then tried to assign a <code>Session</code> as the dependency override, which FastAPI can't call. Fixed by keeping <code>get_test_db</code> a plain, un-decorated generator function, referenced directly by name.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="tab-pane" id="tab-fn-tx">
+      <div class="pane-header">
+        <div class="pane-eyebrow">Field notes</div>
+        <div class="pane-title">Transactions &amp; overrides</div>
+        <div class="pane-subtitle">Two ways state can leak between tests when cleanup isn't explicit.</div>
+      </div>
+      <div class="pane-body">
+        <div class="field-note">
+          <div class="field-note-title"><span class="field-note-num">4</span> The savepoint/commit conflict</div>
+          <p class="prose">An early <code>db_session</code> fixture wrapped the test session in its own <code>connection.begin()</code> transaction, intending to roll it back after each test. But the app's routes call <code>session.commit()</code> themselves — and a session bound to an already-open connection-level transaction treats <code>commit()</code> as ending <em>that</em> transaction, not just flushing. The fixture's own <code>transaction.rollback()</code> then had nothing left to undo. This is exactly the gotcha that made transactional rollback the rejected option back when the test-DB strategy was chosen — it crept back in through the fixture implementation. Fixed by dropping the connection/transaction wrapper entirely: a plain session on the engine, <code>TRUNCATE</code> before yield, close after.</p>
+        </div>
+        <div class="field-note">
+          <div class="field-note-title"><span class="field-note-num">5</span> Uncleared dependency_overrides</div>
+          <p class="prose">An override set inline inside one test function body (<code>app.dependency_overrides[get_db] = get_test_db</code>), with no teardown, persists on the shared <code>app</code> object for every test that runs afterward — order-dependent and easy to miss, since a suite can pass by luck if tests happen to run in a forgiving order. Fixed by moving the override into a fixture with <code>app.dependency_overrides.clear()</code> after <code>yield</code>.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="tab-pane" id="tab-fn-payload">
+      <div class="pane-header">
+        <div class="pane-eyebrow">Field notes</div>
+        <div class="pane-title">UUIDs &amp; payload traps</div>
+        <div class="pane-subtitle">Small type and syntax mismatches that read correctly at a glance.</div>
+      </div>
+      <div class="pane-body">
+        <div class="field-note">
+          <div class="field-note-title"><span class="field-note-num">6</span> UUID vs str comparison</div>
+          <p class="prose"><code>assert body["policy_id"] == policy.id</code> — <code>body</code> comes from <code>response.json()</code>, so every value is a plain JSON type (<code>str</code>). <code>policy.id</code> is still a <code>uuid.UUID</code> object off the SQLAlchemy model. A <code>str</code> and a <code>UUID</code> are never equal to each other even for the same value — no implicit coercion. Fixed by comparing against the same string used to build the payload (<code>str(policy.id)</code>).</p>
+        </div>
+        <div class="field-note">
+          <div class="field-note-title"><span class="field-note-num">7</span> Dotted string, not attribute access</div>
+          <p class="prose"><code>payload["policy.id"]</code> — inside quotes, <code>"policy.id"</code> is a literal string containing a period, not dotted attribute access on a <code>policy</code> variable. The dict was built with the key <code>"policy_id"</code> (underscore), so this raised <code>KeyError: 'policy.id'</code>.</p>
+        </div>
+        <div class="field-note">
+          <div class="field-note-title"><span class="field-note-num">8</span> ForeignKeyViolation on an empty test DB</div>
+          <p class="prose">Sending a hardcoded <code>policy_id</code> that doesn't exist in the freshly truncated <code>claims_test</code> DB raises <code>sqlalchemy.exc.IntegrityError</code> / <code>ForeignKeyViolation</code> on insert. Expected, not a bug — resolved by the <code>seeded_db</code> fixture inserting a real Customer + Policy first and using its actual <code>.id</code>.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="tab-pane" id="tab-fn-logging">
+      <div class="pane-header">
+        <div class="pane-eyebrow">Field notes</div>
+        <div class="pane-title">Logging internals</div>
+        <div class="pane-subtitle">What structlog actually touches, and what FastAPI's middleware stack actually does.</div>
+      </div>
+      <div class="pane-body">
+        <div class="field-note">
+          <div class="field-note-title"><span class="field-note-num">9</span> structlog never touches stdlib logging</div>
+          <p class="prose">With <code>PrintLoggerFactory</code>, structlog calls <code>print()</code> directly. <code>logging.basicConfig(format="%(message)s")</code> only affects Python's stdlib <code>logging</code> module — it strips uvicorn's default log prefix, but doesn't route uvicorn's or SQLAlchemy's logs through the JSON pipeline. Net effect: app logs are one-line JSON, uvicorn's are plain text, side by side in the same terminal. Real integration needs <code>structlog.stdlib.ProcessorFormatter</code> attached to the stdlib handlers — scoped as later work, not this slice.</p>
+        </div>
+        <div class="field-note">
+          <div class="field-note-title"><span class="field-note-num">10</span> Logging placement on the exception path</div>
+          <p class="prose">An early version computed <code>duration_ms</code> and logged <code>http_request</code> only after the whole <code>try/except/finally</code> block. A crashed request never reached that line — it got no log at all, exactly the request you'd most want timing data for. Fixed by computing duration and logging (<code>unhandled_exception</code>, with duration) inside the <code>except</code> branch as well.</p>
+        </div>
+        <div class="field-note">
+          <div class="field-note-title"><span class="field-note-num">11</span> Where FastAPI's own error responses actually get handled</div>
+          <p class="prose">FastAPI's <code>ExceptionMiddleware</code> sits <em>inside</em> custom <code>BaseHTTPMiddleware</code> in the stack. A 404 or 422 is already a normal <code>Response</code> by the time <code>call_next</code> returns to the middleware — it hits the ordinary success-path log line, never the <code>except</code> block. Only a genuinely unhandled crash (uncaught <code>IntegrityError</code>) reaches <code>except</code>. Confirmed against a live 404 and a live FK-violation crash side by side.</p>
+        </div>
+        <div class="field-note">
+          <div class="field-note-title"><span class="field-note-num">12</span> The duplicate traceback isn't a bug</div>
+          <p class="prose">An unhandled exception currently prints twice: once as the app's own structured <code>unhandled_exception</code> JSON line, and once as a second, plain-text traceback from Starlette's default <code>ServerErrorMiddleware</code> — which sits outside the custom middleware and does its own logging on the way to producing the 500 response. Not duplicated logic in the app; a real gap — no <code>@app.exception_handler</code> yet to intercept and return a clean JSON error body before Starlette's default takes over. Logged as an open question, not fixed this slice.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="tab-pane" id="tab-fn-house">
+      <div class="pane-header">
+        <div class="pane-eyebrow">Field notes</div>
+        <div class="pane-title">Housekeeping</div>
+        <div class="pane-subtitle">Low priority, noted so it doesn't get forgotten.</div>
+      </div>
+      <div class="pane-body">
+        <div class="field-note">
+          <div class="field-note-title"><span class="field-note-num">13</span> datetime.utcnow() deprecation</div>
+          <p class="prose">Every test run emits a <code>DeprecationWarning</code> for <code>datetime.datetime.utcnow()</code>, inherited from a Slice 1 model default (<code>created_at</code> columns). Test code itself uses <code>datetime.now()</code> correctly — this comes from <code>models.py</code>. Cosmetic today; a five-minute future <code>chore:</code> commit swaps the default to <code>datetime.now(datetime.UTC)</code>.</p>
+          <div class="tags"><span class="tag tag-amber">chore</span><span class="tag">low priority</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ NEXT ═══ -->
+    <div class="tab-pane" id="tab-next">
+      <div class="pane-header">
+        <div class="pane-eyebrow">Next</div>
+        <div class="pane-title">Slice 4 — Authentication</div>
+        <div class="pane-subtitle">JWT, protecting the existing endpoints.</div>
+      </div>
+      <div class="pane-body">
+        <div class="section">
+          <p class="prose">Slice 3 is functionally complete — commit and ADR-004 are the two remaining items on the Done checklist. Once ADR-004 is written, Slice 4 begins per the master plan's build order.</p>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <script>
+    function show(id, btn) {
+      document.querySelectorAll('.tab-pane').forEach(function (p) { p.classList.remove('active'); });
+      document.getElementById('tab-' + id).classList.add('active');
+      document.querySelectorAll('.nav-item').forEach(function (b) { b.classList.remove('active'); });
+      if (btn) btn.classList.add('active');
+      document.querySelector('.content').scrollTop = 0;
+    }
+  </script>
+
+</body>
+</html>

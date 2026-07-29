@@ -469,7 +469,7 @@
 
     <div class="stat-row">
       <div class="stat">
-        <div class="stat-num"><span id="stat-done" class="accent-green">3</span></div>
+        <div class="stat-num"><span id="stat-done" class="accent-green">4</span></div>
         <div class="stat-label">Slices done</div>
       </div>
       <div class="stat">
@@ -477,7 +477,7 @@
         <div class="stat-label">Total slices</div>
       </div>
       <div class="stat">
-        <div class="stat-num"><span id="stat-adrs" class="accent-amber">3</span></div>
+        <div class="stat-num"><span id="stat-adrs" class="accent-amber">4</span></div>
         <div class="stat-label">ADRs written</div>
       </div>
       <div class="stat">
@@ -488,11 +488,11 @@
 
     <div class="progress-wrap">
       <div class="progress-bar">
-        <div class="progress-fill" style="width: 16.7%"></div>
+        <div class="progress-fill" style="width: 22.2%"></div>
       </div>
       <div class="progress-label">
         <span>Jun 2026</span>
-        <span id="progress-pct">16.7% complete</span>
+        <span id="progress-pct">22.2% complete</span>
         <span>May 2027</span>
       </div>
     </div>
@@ -545,27 +545,28 @@
         </div>
       </a>
 
-      <a class="slice-card active" href="#">
+      <a class="slice-card done" href="PhaseA-Slice3.html">
         <div class="slice-top">
           <span class="slice-num">A · Slice 3</span>
-          <span class="slice-status status-active">In progress</span>
+          <span class="slice-status status-done">✓ Done</span>
         </div>
         <div class="slice-title">Tests &amp; Logging</div>
         <div class="slice-desc">pytest coverage on the claim path. structlog structured logging. CI runs green.</div>
         <div class="slice-footer">
-          <span class="slice-adr"><span class="dot"></span>ADR-003 — logging strategy</span>
+          <span class="slice-adr"><span class="dot green"></span>ADR-004 — tests &amp; logging strategy</span>
+          <span class="arrow-hint">→</span>
         </div>
       </a>
 
-      <a class="slice-card locked" href="#">
+      <a class="slice-card active" href="#">
         <div class="slice-top">
           <span class="slice-num">A · Slice 4</span>
-          <span class="slice-status status-locked">Locked</span>
+          <span class="slice-status status-active">In progress</span>
         </div>
         <div class="slice-title">Authentication</div>
         <div class="slice-desc">JWT auth. Protected endpoints. Roles: adjuster vs policyholder. ADR on the auth strategy.</div>
         <div class="slice-footer">
-          <span class="slice-adr"><span class="dot"></span>ADR-004 — auth approach</span>
+          <span class="slice-adr"><span class="dot"></span>ADR-005 — auth approach</span>
         </div>
       </a>
 
@@ -577,7 +578,7 @@
         <div class="slice-title">Minimal Frontend</div>
         <div class="slice-desc">React + shadcn/ui: list, view, and create claims. Wired to the live API. No mock data.</div>
         <div class="slice-footer">
-          <span class="slice-adr"><span class="dot"></span>ADR-005 — UI framework</span>
+          <span class="slice-adr"><span class="dot"></span>ADR-006 — UI framework</span>
         </div>
       </a>
 
@@ -589,7 +590,7 @@
         <div class="slice-title">Containerize, Deploy &amp; CI</div>
         <div class="slice-desc">Docker → AWS App Runner → GitHub Actions. The app has a real public URL. CI passes on every push.</div>
         <div class="slice-footer">
-          <span class="slice-adr"><span class="dot"></span>ADR-006 — deployment target</span>
+          <span class="slice-adr"><span class="dot"></span>ADR-007 — deployment target</span>
         </div>
       </a>
 
@@ -783,9 +784,15 @@
           <td style="font-family:var(--mono); font-size:11px; color:var(--text-subtle)">A · Slice 2</td>
           <td><span class="slice-status status-done" style="font-size:9px">Done</span></td>
         </tr>
+        <tr>
+          <td><a class="adr-id" href="adr/ADR-004-test-logging.html">ADR-004</a></td>
+          <td>Test &amp; logging strategy — separate test DB, truncate isolation, structlog JSON middleware</td>
+          <td style="font-family:var(--mono); font-size:11px; color:var(--text-subtle)">A · Slice 3</td>
+          <td><span class="slice-status status-done" style="font-size:9px">Done</span></td>
+        </tr>
       </tbody>
     </table>
-    <div class="adr-empty">ADRs 004–015 unlock as slices complete · target 15–25 over the year</div>
+    <div class="adr-empty">ADRs 005–015 unlock as slices complete · target 15–25 over the year</div>
   </section>
 
   <!-- FOOTER -->

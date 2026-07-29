@@ -1,0 +1,278 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ADR-004 · claims-app · Slice 3</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#f7f7f5;--surface:#ffffff;--surface2:#f2f2ef;
+  --border:#e4e4e0;--border2:#d4d4cf;
+  --text:#1a1a18;--muted:#5a5a55;--subtle:#9a9a94;
+  --accent:#1a4a2e;--accent-bg:#edf4f0;--accent-border:#b8d9c5;
+  --blue:#1a3a5c;--blue-bg:#edf2f8;--blue-border:#b8cfe0;
+  --amber:#5c3a00;--amber-bg:#fdf5e6;--amber-border:#e8c87a;
+  --red:#5c1a1a;--red-bg:#fdf0f0;--red-border:#e8b8b8;
+  --mono:'IBM Plex Mono',ui-monospace,monospace;
+  --sans:'IBM Plex Sans',system-ui,sans-serif;
+  --radius:4px;--radius-lg:8px;
+}
+html{scroll-behavior:smooth}
+body{font-family:var(--sans);background:var(--bg);color:var(--text);min-height:100vh;-webkit-font-smoothing:antialiased}
+.page{max-width:760px;margin:0 auto;padding:56px 40px 100px}
+.header{border-bottom:2px solid var(--text);padding-bottom:28px;margin-bottom:36px}
+.header-meta{display:flex;gap:24px;flex-wrap:wrap;margin-bottom:16px}
+.meta-item{display:flex;flex-direction:column;gap:3px}
+.meta-label{font-family:var(--mono);font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--subtle)}
+.meta-value{font-family:var(--mono);font-size:12px;color:var(--text);font-weight:500}
+.status-badge{display:inline-flex;align-items:center;gap:6px;padding:3px 10px;border-radius:20px;font-family:var(--mono);font-size:11px;font-weight:600;background:var(--accent-bg);border:1px solid var(--accent-border);color:var(--accent)}
+.status-badge::before{content:'';width:6px;height:6px;border-radius:50%;background:var(--accent)}
+.adr-number{font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--subtle);margin-bottom:8px}
+.adr-title{font-size:28px;font-weight:600;letter-spacing:-.02em;color:var(--text);line-height:1.2;margin-bottom:12px}
+.adr-subtitle{font-size:15px;color:var(--muted);line-height:1.6}
+.section{margin-bottom:44px}
+.section-title{font-size:11px;font-weight:600;font-family:var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--subtle);border-bottom:1px solid var(--border);padding-bottom:8px;margin-bottom:20px}
+.prose{font-size:14.5px;color:var(--muted);line-height:1.75;margin-bottom:14px}
+.prose strong{color:var(--text);font-weight:600}
+.decisions{display:flex;flex-direction:column;gap:20px}
+.decision{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden}
+.decision-head{display:flex;align-items:flex-start;gap:16px;padding:18px 20px;border-bottom:1px solid var(--border);background:var(--surface2)}
+.decision-num{font-family:var(--mono);font-size:11px;font-weight:600;color:var(--subtle);padding-top:2px;flex-shrink:0;width:20px}
+.decision-title{font-size:15px;font-weight:600;color:var(--text);line-height:1.3}
+.decision-body{padding:16px 20px 18px 56px}
+.decision-chosen{display:inline-flex;align-items:center;gap:7px;padding:4px 12px;border-radius:20px;background:var(--accent-bg);border:1px solid var(--accent-border);font-family:var(--mono);font-size:11px;font-weight:600;color:var(--accent);margin-bottom:12px}
+.decision-chosen::before{content:'✓';font-size:10px}
+.field-row{display:grid;grid-template-columns:100px 1fr;gap:10px;margin-bottom:8px;font-size:13.5px}
+.field-label{color:var(--subtle);font-weight:500;padding-top:1px}
+.field-value{color:var(--muted);line-height:1.6}
+.field-value em{font-style:normal;color:var(--text);font-weight:500}
+.options-list{display:flex;gap:6px;flex-wrap:wrap}
+.option-chip{font-family:var(--mono);font-size:11px;padding:2px 8px;border-radius:3px;background:var(--surface2);border:1px solid var(--border2);color:var(--muted)}
+.option-chip.chosen{background:var(--accent-bg);border-color:var(--accent-border);color:var(--accent)}
+.tradeoff{display:flex;gap:8px;align-items:flex-start;margin-top:10px;padding:10px 12px;background:var(--amber-bg);border:1px solid var(--amber-border);border-radius:var(--radius);font-size:13px;color:var(--amber);line-height:1.55}
+.tradeoff-icon{flex-shrink:0;font-size:13px;margin-top:1px}
+.consequences-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
+.consequence-block{border-radius:var(--radius-lg);padding:16px 18px}
+.consequence-block.positive{background:var(--accent-bg);border:1px solid var(--accent-border)}
+.consequence-block.negative{background:var(--amber-bg);border:1px solid var(--amber-border)}
+.consequence-label{font-family:var(--mono);font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;font-weight:600;margin-bottom:10px}
+.positive .consequence-label{color:var(--accent)}
+.negative .consequence-label{color:var(--amber)}
+.consequence-list{list-style:none;display:flex;flex-direction:column;gap:8px}
+.consequence-list li{font-size:13.5px;line-height:1.6;display:flex;gap:8px;align-items:flex-start}
+.consequence-list li::before{content:'';width:5px;height:5px;border-radius:50%;margin-top:7px;flex-shrink:0}
+.positive .consequence-list li{color:var(--muted)}
+.positive .consequence-list li::before{background:var(--accent)}
+.negative .consequence-list li{color:var(--amber)}
+.negative .consequence-list li::before{background:var(--amber)}
+.questions{display:flex;flex-direction:column;gap:10px}
+.question{display:flex;gap:12px;align-items:flex-start;padding:12px 14px;background:var(--blue-bg);border:1px solid var(--blue-border);border-radius:var(--radius)}
+.q-icon{font-size:13px;flex-shrink:0;margin-top:1px}
+.q-body{font-size:13.5px;color:var(--blue);line-height:1.6}
+.q-body strong{font-weight:600;display:block;margin-bottom:2px}
+.footer{border-top:1px solid var(--border);padding-top:20px;margin-top:48px;display:flex;justify-content:space-between;align-items:center}
+.footer-left{font-family:var(--mono);font-size:11px;color:var(--subtle)}
+.footer-right{font-family:var(--mono);font-size:11px;color:var(--subtle)}
+.ic{font-family:var(--mono);font-size:12px;background:var(--surface2);border:1px solid var(--border);border-radius:3px;padding:1px 5px;color:var(--text)}
+@media(max-width:600px){
+  .page{padding:32px 20px 60px}
+  .consequences-grid{grid-template-columns:1fr}
+  .decision-body{padding-left:20px}
+}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <a href="../index.html" style="display:inline-flex;align-items:center;gap:8px;font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);text-decoration:none;margin-bottom:20px;">← Back to main</a>
+
+  <header class="header">
+    <div class="adr-number">ADR-004 · claims-app · Slice 3</div>
+    <h1 class="adr-title">Test Isolation Strategy &amp; Structured Logging</h1>
+    <p class="adr-subtitle">How the create/read claim path gets tested in isolation from the dev database, and how every request gets logged.</p>
+    <div class="header-meta" style="margin-top:20px">
+      <div class="meta-item">
+        <div class="meta-label">Status</div>
+        <div><span class="status-badge">Accepted</span></div>
+      </div>
+      <div class="meta-item">
+        <div class="meta-label">Date</div>
+        <div class="meta-value">July 2026</div>
+      </div>
+      <div class="meta-item">
+        <div class="meta-label">Slice</div>
+        <div class="meta-value">3 — Tests + Structured Logging</div>
+      </div>
+      <div class="meta-item">
+        <div class="meta-label">Stack</div>
+        <div class="meta-value">pytest · structlog · SQLAlchemy · PostgreSQL</div>
+      </div>
+    </div>
+  </header>
+
+  <section class="section">
+    <div class="section-title">Context</div>
+    <p class="prose">Slice 2 delivered <span class="ic">POST /claims</span> and <span class="ic">GET /claims</span> against the dev database with no automated tests and no logging beyond uvicorn's default access log. This slice adds pytest coverage over that path and structured logging over every request, without changing any route code.</p>
+    <p class="prose">Testing against a real database meant deciding how to keep test runs from touching or depending on dev data, and how to reset state between individual tests. Logging meant picking a library and a request-cycle strategy that captures both successful and failed requests.</p>
+  </section>
+
+  <section class="section">
+    <div class="section-title">Decisions</div>
+    <div class="decisions">
+
+      <div class="decision">
+        <div class="decision-head">
+          <div class="decision-num">1</div>
+          <div class="decision-title">Test database isolation strategy</div>
+        </div>
+        <div class="decision-body">
+          <div class="decision-chosen">Separate test database</div>
+          <div class="field-row">
+            <div class="field-label">Options</div>
+            <div class="field-value">
+              <div class="options-list">
+                <span class="option-chip chosen">Separate DB</span>
+                <span class="option-chip">Transactional rollback</span>
+              </div>
+            </div>
+          </div>
+          <div class="field-row">
+            <div class="field-label">Rationale</div>
+            <div class="field-value">Managing a second database (<span class="ic">claims_test</span>) is simpler than layering rollback logic on top of the main database. The app's routes already call <span class="ic">session.commit()</span> themselves, which complicates a rollback-based approach — a separate database sidesteps that entirely.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="decision">
+        <div class="decision-head">
+          <div class="decision-num">2</div>
+          <div class="decision-title">Schema setup for the test database</div>
+        </div>
+        <div class="decision-body">
+          <div class="decision-chosen">Base.metadata.create_all()</div>
+          <div class="field-row">
+            <div class="field-label">Options</div>
+            <div class="field-value">
+              <div class="options-list">
+                <span class="option-chip chosen">create_all()</span>
+                <span class="option-chip">Real Alembic migrations</span>
+              </div>
+            </div>
+          </div>
+          <div class="field-row">
+            <div class="field-label">Rationale</div>
+            <div class="field-value">Migrations themselves aren't under test yet — this slice only tests the API layer. Building the schema straight from the models is sufficient for that.</div>
+          </div>
+          <div class="tradeoff">
+            <div class="tradeoff-icon">↕</div>
+            Whether <span class="ic">alembic upgrade head</span> actually reproduces this schema isn't exercised by any test. Deferred until migrations themselves need testing.
+          </div>
+        </div>
+      </div>
+
+      <div class="decision">
+        <div class="decision-head">
+          <div class="decision-num">3</div>
+          <div class="decision-title">Per-test isolation mechanism</div>
+        </div>
+        <div class="decision-body">
+          <div class="decision-chosen">TRUNCATE ... CASCADE before each test</div>
+          <div class="field-row">
+            <div class="field-label">Options</div>
+            <div class="field-value">
+              <div class="options-list">
+                <span class="option-chip chosen">Truncate before each test</span>
+                <span class="option-chip">Transaction rollback per test</span>
+              </div>
+            </div>
+          </div>
+          <div class="field-row">
+            <div class="field-label">Rationale</div>
+            <div class="field-value">Truncating clears every table before each test runs, so there's no dependency on how the previous test ended. If a test fails partway through, the next one still starts from a guaranteed-clean set of tables — no special recovery logic needed for a mid-test failure.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="decision">
+        <div class="decision-head">
+          <div class="decision-num">4</div>
+          <div class="decision-title">Logging library and output format</div>
+        </div>
+        <div class="decision-body">
+          <div class="decision-chosen">structlog + JSONRenderer</div>
+          <div class="field-row">
+            <div class="field-label">Options</div>
+            <div class="field-value">
+              <div class="options-list">
+                <span class="option-chip chosen">structlog · JSONRenderer</span>
+                <span class="option-chip">structlog · ConsoleRenderer</span>
+              </div>
+            </div>
+          </div>
+          <div class="field-row">
+            <div class="field-label">Rationale</div>
+            <div class="field-value">Setting up a nicer console renderer isn't the core logging problem this slice needed to solve, and <span class="ic">JSONRenderer</span>'s output proved readable enough directly in the terminal while debugging. Not worth the extra setup right now.</div>
+          </div>
+          <div class="tradeoff">
+            <div class="tradeoff-icon">↕</div>
+            Less visually scannable during local development than a colorized console renderer would be. Can revisit if it becomes a real friction point.
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="section-title">Consequences</div>
+    <div class="consequences-grid">
+      <div class="consequence-block positive">
+        <div class="consequence-label">Positive</div>
+        <ul class="consequence-list">
+          <li>Tests run against a real Postgres database, so no dialect-specific surprises versus dev/prod</li>
+          <li>A failed test doesn't leave the database in a state that affects the next test — no dependency on execution order</li>
+          <li>Every request now produces a structured, timestamped log line with timing data, including on the crash path</li>
+          <li>Logging was added entirely as middleware — zero changes to route code</li>
+        </ul>
+      </div>
+      <div class="consequence-block negative">
+        <div class="consequence-label">Negative / trade-offs</div>
+        <ul class="consequence-list">
+          <li>Test-DB schema isn't guaranteed to match what a real migration run would produce, since <span class="ic">create_all()</span> bypasses Alembic entirely</li>
+          <li>Third-party logs (uvicorn, SQLAlchemy) remain plain text, splitting terminal output between two formats</li>
+          <li>Unhandled DB errors still return a bare 500 to callers, with a duplicated traceback printed alongside the structured log</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="section-title">Open questions</div>
+    <div class="questions">
+      <div class="question">
+        <div class="q-icon">?</div>
+        <div class="q-body">
+          <strong>When do uvicorn's and SQLAlchemy's logs get routed through the same JSON pipeline?</strong>
+          Needs <span class="ic">structlog.stdlib.ProcessorFormatter</span> wired onto the stdlib handlers. Postponed until the AI agent subsystem (Phase D) is in place — a good candidate task to hand to the agent rather than do by hand now.
+        </div>
+      </div>
+      <div class="question">
+        <div class="q-icon">?</div>
+        <div class="q-body">
+          <strong>When does a custom exception handler replace the bare 500 / duplicated traceback?</strong>
+          A proper <span class="ic">@app.exception_handler</span> for cases like <span class="ic">IntegrityError</span> would return a clean JSON error body instead. Same deferral as above — postponed to Phase D.
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <div class="footer-left">claims-app · ADR-004 · Slice 3</div>
+    <div class="footer-right">Status: Accepted · July 2026</div>
+  </footer>
+
+</div>
+</body>
+</html>
