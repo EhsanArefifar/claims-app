@@ -2,6 +2,7 @@ import pytest
 import os
 import uuid
 from datetime import datetime
+
 from sqlalchemy import create_engine, text
 from sqlalchemy.orm import sessionmaker
 from fastapi.testclient import TestClient
@@ -20,8 +21,8 @@ TestingSessionLocal = sessionmaker(
 )
 
 
-# Create schema once
-@pytest.fixture(scope="session", autouse=True)
+# Create schema once — only runs when a test actually requests db_session
+@pytest.fixture(scope="session")
 def create_tables():
     Base.metadata.create_all(engine)
     yield
@@ -30,7 +31,7 @@ def create_tables():
 
 # Clean database before every test
 @pytest.fixture()
-def db_session():
+def db_session(create_tables):
 
     session = TestingSessionLocal(bind=engine)
 
@@ -90,3 +91,11 @@ def client(db_session):
         yield c
 
     app.dependency_overrides.clear()
+
+
+@pytest.fixture()
+def client_no_db():
+    """TestClient with no DB dependency — for tests that are rejected by Pydantic
+    before the database layer runs (e.g. missing required fields)."""
+    with TestClient(app) as c:
+        yield c
